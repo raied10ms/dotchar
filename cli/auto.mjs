@@ -55,6 +55,7 @@ try {
       node('tools/gen-images.mjs', work, '--stage', 'face', '--only', 'eyes-closed,expr-happy,expr-sad,expr-surprised,expr-angry,expr-worried,expr-excited')
         .then(() => node('tools/gen-images.mjs', work, '--stage', 'blinks')),
       node('tools/gen-images.mjs', work, '--stage', 'poses', '--only', poses),
+      run(process.execPath, [path.join(ROOT, 'tools/gen-cycles.mjs'), work], { allowFail: true }),   // walk + run sheets
     ]);
     status({ step: 'Finding the mouth and eyes', progress: 0.5 });
     await node('tools/locate.mjs', work);
@@ -70,6 +71,7 @@ try {
     await node('cli/char.mjs', 'unpack', first, W('char'));
     const eo = build.eyes?.openings;
     await py('tools/eye_states.py', W('char'), '--master', W('master.png'), '--dir', work, '--sheet', W('qa-eyes.png'), ...(eo ? ['--eyes', eo.join(',')] : []));
+    if (fs.existsSync(W('cycle-walk.png')) || fs.existsSync(W('cycle-run.png'))) await run('python3', [path.join(ROOT, 'tools/cycle_fit.py'), work, W('char'), '--sheet', W('qa-cycles.png')], { allowFail: true });
     if (!drawn) await node('cli/char.mjs', 'pack', W('char'), '-o', W(`${id}.char`));
     if (drawn) {
       status({ step: 'Drawing the mouth shapes on their own face', progress: 0.66 });

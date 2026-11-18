@@ -5,7 +5,7 @@
    "file": "aditya.char",
    "id": "aditya",
    "name": "Aditya",
-   "version": "1.0.0",
+   "version": "1.1.0",
    "description": "Aditya, 10 Minute School teacher (caricature). Big loose curly black hair, dark rectangular glasses, short patchy beard, black crew-neck t-shirt, blue jeans.",
    "tags": [
     "teacher",
@@ -53,14 +53,14 @@
     "run",
     "walk"
    ],
-   "bytes": 9161931,
+   "bytes": 9096930,
    "ok": true
   },
   {
    "file": "bhasha.char",
    "id": "bhasha",
    "name": "Bhasha",
-   "version": "1.0.0",
+   "version": "1.1.0",
    "description": "Bhasha, 8, the Echo girl of Shimul Bari (first floor, family restaurant). Green sari over a red-and-gold skirt, brown bob, red bindi.",
    "tags": [
     "main-cast",
@@ -149,14 +149,14 @@
     "run",
     "walk"
    ],
-   "bytes": 16457972,
+   "bytes": 14539713,
    "ok": true
   },
   {
    "file": "durjoy.char",
    "id": "durjoy",
    "name": "Durjoy",
-   "version": "1.0.0",
+   "version": "1.1.0",
    "description": "Durjoy, 10 Minute School teacher (caricature). Wavy black hair swept up, round black glasses, thin moustache, black 10 Minute School polo, grey trousers.",
    "tags": [
     "teacher",
@@ -204,14 +204,14 @@
     "run",
     "walk"
    ],
-   "bytes": 7946375,
+   "bytes": 6314366,
    "ok": true
   },
   {
    "file": "fardin.char",
    "id": "fardin",
    "name": "Fardin",
-   "version": "1.3.0",
+   "version": "1.4.0",
    "description": "Fardin, 10 Minute School teacher (caricature). Maroon punjabi, white pajama, round glasses, full beard.",
    "tags": [
     "teacher",
@@ -259,14 +259,14 @@
     "run",
     "walk"
    ],
-   "bytes": 9492854,
+   "bytes": 7488465,
    "ok": true
   },
   {
    "file": "prapti.char",
    "id": "prapti",
    "name": "Prapti",
-   "version": "1.1.0",
+   "version": "1.2.0",
    "description": "Prapti, 10 Minute School teacher (caricature). Black saree with rust block-print border, black hijab, thin black rectangular spectacles.",
    "tags": [
     "teacher",
@@ -314,14 +314,14 @@
     "run",
     "walk"
    ],
-   "bytes": 12227885,
+   "bytes": 9849206,
    "ok": true
   },
   {
    "file": "rifat.char",
    "id": "rifat",
    "name": "Rifat",
-   "version": "1.3.0",
+   "version": "1.4.0",
    "description": "Rifat, 10 Minute School teacher (caricature). Untucked light-blue shirt, navy trousers, full beard.",
    "tags": [
     "teacher",
@@ -369,7 +369,7 @@
     "run",
     "walk"
    ],
-   "bytes": 9339630,
+   "bytes": 7575243,
    "ok": true
   }
  ]

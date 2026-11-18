@@ -54,7 +54,8 @@ Every character has a **canvas**, e.g. 1024×1536. The master pose and every oth
     "cry":     { "image": "poses/cry.webp", "talkable": false }          // silent pose: own face, no lip-sync
   },
   "cycles": {
-    "walk": { "facing": "R", "frames": [ { "image": "cycles/walk/0.webp", "at": [190, 152], "size": [640, 1290] }, … ] }
+    "walk": { "facing": "R", "fps": 8, "stride": 457,     // stride = canvas px travelled while the frames play once
+              "frames": [ { "image": "cycles/walk/0.webp", "at": [190, 152], "size": [640, 1290] }, … ] }
   },
 
   "face": {

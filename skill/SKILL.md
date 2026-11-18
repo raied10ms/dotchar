@@ -36,7 +36,7 @@ Run `npm run char -- list` to see the library. Run `npm run char -- validate cha
 
 ## 2. Use a character
 
-1. **Audio.** Use the user's file, or make TTS. If `meta.voice` is set in the char, use that ElevenLabs voice id.
+1. **Audio.** Use the user's file, or make a voice line: `node tools/tts.mjs "text" --voice <id> -o line.mp3 [--lang bn]` (ElevenLabs; needs `ELEVENLABS_API_KEY`). It writes the audio, the word timings and the lip-sync track in one go, and it is the right route for Bangla. Use the character's `meta.voice.id` if it has one.
 2. **Lip-sync:** `npm run char -- lipsync line.mp3 --stt deepgram`, which writes `line.lipsync.json`. Bangla: add `--lang bn --stt openai`. With no key, skip `--stt` (acoustic only; tell the user it's lower quality).
 3. **Output**
    - Video:
@@ -75,8 +75,8 @@ Framing rule: important dialogue goes in `bust` or `face`. In a wide full-body s
 1. Make `work/<id>/`, put the photos in `work/<id>/ref/`, and write `work/<id>/character.json`:
    `{"name": "...", "refs": ["ref/1.jpg", ...], "likeness": {"outfit": "..."}, "style": "glossy painterly cel-shaded caricature with crisp clean line work", "lipsSet": "female|male", "poses": "quick|full", "mouths": "drawn"}`
 2. `node cli/auto.mjs master work/<id>` (1 image call). Show `work/<id>/master.png` to the user and **wait for their approval**. To redo, put the correction in `"identity"` and run it again.
-3. `node cli/auto.mjs rest work/<id>` (about 27 calls for 5 poses, 32 for 10; 5–10 minutes). It draws the eyes, expressions, blinks and poses, finds the mouth and eyes, rigs, builds the eye patches, draws the mouths, packs and runs the judge.
-4. Look at `work/<id>/locate-check.png` (orange box on the lips, blue box on eyes and brows), `work/<id>/qa-eyes.png` (every expression and blink) and `work/<id>/qa.png` (every mouth). If a box is off, fix `build.json` and continue from step D below. If a mouth shape is bad, re-roll it as in D2.
+3. `node cli/auto.mjs rest work/<id>` (about 29 calls for 5 poses, 34 for 10; 5–10 minutes). It draws the eyes, expressions, blinks and poses, finds the mouth and eyes, rigs, builds the eye patches, draws the mouths, packs and runs the judge.
+4. Look at `work/<id>/locate-check.png` (orange box on the lips, blue box on eyes and brows), `work/<id>/qa-eyes.png` (every expression and blink), `work/<id>/qa-cycles.png` (walk and run) and `work/<id>/qa.png` (every mouth). If a box is off, fix `build.json` and continue from step D below. If a mouth shape is bad, re-roll it as in D2.
 5. Result: `work/<id>/<id>.char`. `status.json` lists silent poses and the judge scores. Then go to E and F.
 
 The same flow is the Studio's Create tab (*New character from photos*).
@@ -112,7 +112,7 @@ Check `master.png` against `docs/METHOD.md`:
 node tools/gen-images.mjs work/<id> --stage face     # mouthless, eyes-closed, 6 expressions
 node tools/gen-images.mjs work/<id> --stage blinks   # each expression with its eyes closed
 node tools/gen-images.mjs work/<id> --stage poses    # 10 default poses (+ --add <id> "<description>")
-node tools/gen-images.mjs work/<id> --stage cycles   # optional walk/run sheets
+node tools/gen-cycles.mjs work/<id>                  # walk + run: 4 clean drawings of one step each (fit them in step D3)
 ```
 Look at every output. Redo a bad one with `--only <name> --force`. These count as bad:
 - the head moved or turned in a pose,
@@ -167,6 +167,8 @@ npm run char -- pack work/<id>/char -o work/<id>/<id>.char
   - moves the jaw line.
 - The judge is harsh on purpose and rarely returns PASS. Stop when likeness ≥ 8, rest_pose is 10, facial hair is intact and no shape looks wrong at playback size. Two or three rounds is normal. Report the final scores to the user.
 - Then judge real speech too. Render a line at `--fit face`, make a frame sheet, and pass it as a second `--render`.
+
+**D3. Walk / run.** `python3 tools/cycle_fit.py work/<id> work/<id>/char --sheet work/<id>/qa-cycles.png`. On the sheet, the four walk drawings must read wide, half, overlapping, half, in order; every figure must be the same size with standing feet on the ground line; nothing may be cut off. Otherwise re-roll with `gen-cycles.mjs --only walk --force`. Never fit each frame to its own bounding box: that is what makes a walk shake on the spot.
 
 People who prefer clicking can do step D in the Studio: `npm run studio` → Create. It saves the same `build.json`.
 

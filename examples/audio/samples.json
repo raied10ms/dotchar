@@ -34,5 +34,47 @@
   "label": "Durjoy: \"Woah, is that the one about building a moon buggy?\"",
   "audio": "durjoy-hello.mp3",
   "track": "durjoy-hello.lipsync.json"
+ },
+ {
+  "char": "bhasha",
+  "lang": "bn",
+  "label": "Bhasha (বাংলা): \"হ্যালো বন্ধুরা! আমি ভাষা। চলো, আজ একসাথে নতুন কিছু শিখি!\"",
+  "audio": "bhasha-bn.mp3",
+  "track": "bhasha-bn.lipsync.json"
+ },
+ {
+  "char": "fardin",
+  "lang": "bn",
+  "label": "Fardin (বাংলা): \"হ্যালো বন্ধুরা! আমি ফারদিন। আজকের ক্লাসে তোমাদের সবাইকে স্বাগতম।\"",
+  "audio": "fardin-bn.mp3",
+  "track": "fardin-bn.lipsync.json"
+ },
+ {
+  "char": "rifat",
+  "lang": "bn",
+  "label": "Rifat (বাংলা): \"হ্যালো বন্ধুরা! আমি রিফাত। আজকের ক্লাসে তোমাদের সবাইকে স্বাগতম।\"",
+  "audio": "rifat-bn.mp3",
+  "track": "rifat-bn.lipsync.json"
+ },
+ {
+  "char": "prapti",
+  "lang": "bn",
+  "label": "Prapti (বাংলা): \"হ্যালো বন্ধুরা! আমি প্রাপ্তি। আজকের ক্লাসে তোমাদের সবাইকে স্বাগতম।\"",
+  "audio": "prapti-bn.mp3",
+  "track": "prapti-bn.lipsync.json"
+ },
+ {
+  "char": "aditya",
+  "lang": "bn",
+  "label": "Aditya (বাংলা): \"হ্যালো বন্ধুরা! আমি আদিত্য। আজকের ক্লাসে তোমাদের সবাইকে স্বাগতম।\"",
+  "audio": "aditya-bn.mp3",
+  "track": "aditya-bn.lipsync.json"
+ },
+ {
+  "char": "durjoy",
+  "lang": "bn",
+  "label": "Durjoy (বাংলা): \"হ্যালো বন্ধুরা! আমি দুর্জয়। আজকের ক্লাসে তোমাদের সবাইকে স্বাগতম।\"",
+  "audio": "durjoy-bn.mp3",
+  "track": "durjoy-bn.lipsync.json"
  }
 ]

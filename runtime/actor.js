@@ -60,7 +60,9 @@ export class Actor {
       const m = a.walk || a.run;
       if (!m) continue;
       // default speeds match the drawn stride (feet don't slide): walk 0.9 body-heights/s, run 2.2
-      const kind = a.walk ? 'walk' : 'run', H = puppet.pack.height * scale, sp = m.speed || (kind === 'walk' ? 0.9 : 2.2) * H;
+      const kind = a.walk ? 'walk' : 'run', H = puppet.pack.height * scale, cy = puppet.pack.cycles?.[kind];
+      // cycles that carry their own stride + fps (SPEC) set the natural speed; older ones use the fixed defaults
+      const sp = m.speed || (cy?.stride ? (cy.stride * scale * (cy.fps || 8)) / cy.frames.length : (kind === 'walk' ? 0.9 : 2.2) * H);
       const t0 = Math.max(a.at, tt), dur = Math.abs(m.to - cx) / sp;
       this.moves.push({ t0, t1: t0 + dur, x0: cx, x1: m.to, kind }); cx = m.to; tt = t0 + dur;
     }
@@ -231,7 +233,8 @@ export class Actor {
     // locomotion: cycle frame by distance travelled (stride in screen px)
     if (move && this.puppet.pack.cycles[move.kind]) {
       const H = this.puppet.pack.height * this.scale;
-      const step = (move.kind === 'walk' ? 0.9 / 12 : 2.2 / 15) * H; // 12 / 15 drawings per second at default speed
+      const cy = this.puppet.pack.cycles[move.kind];
+      const step = cy.stride ? (cy.stride * this.scale) / cy.frames.length : (move.kind === 'walk' ? 0.9 / 12 : 2.2 / 15) * H; // distance per drawing: feet never slide
       st.cycle = { id: move.kind, frame: Math.floor(dist / step) };
       face = move.x1 > move.x0 ? 'R' : 'L';
     }

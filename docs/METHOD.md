@@ -75,6 +75,24 @@ python3 tools/eye_states.py <unpacked char folder> --master work/<id>/master.png
 - Check `eyes-qa.png`: one set of brows per state, both eyes changing together, glasses the same everywhere, no visible patch edge.
 - `npm run char -- sheet <id>.char` shows the finished character's expressions, blinks and mouths on one sheet.
 
+## Walk and run: four clean drawings of one step
+
+A walk is four drawings in order: legs **widest** (contact) → **half** apart (down) → **overlapping** (passing) → **half** apart, opening (up). Seen from the side, the step with the other leg looks the same, so those four loop into a full walk. A run is contact → push-off → flight → landing.
+
+```sh
+node tools/gen-cycles.mjs work/<id>                      # cycle-walk.png + cycle-run.png, 4 drawings each (2 image calls)
+python3 tools/cycle_fit.py work/<id> <unpacked char folder> --sheet cycles-qa.png
+```
+
+`cycle_fit.py` is what stops a cycle from "shaking on the spot". It puts every frame at the same character size, holds the head at one x, and keeps the sheet's own ground line so standing feet stay on the ground. It also stores the **stride** (how far one loop of the frames travels) and the frame rate, and players move the character by that stride, so the feet never slide.
+
+Check `cycles-qa.png`:
+- the four walk drawings are clearly wide, half, overlapping, half, in that order;
+- every figure is the same size and all standing feet sit on the grey ground line;
+- nothing is cut off (a trailing leg, a sari hem).
+
+If any of that fails, re-roll the sheet: `gen-cycles.mjs … --only walk --force`. For a sari or long skirt add `--note "the cloth hides the legs: show the stride through the feet under the hem"`.
+
 ## Lip-sync, in three evidence sources
 
 `npm run char -- lipsync line.mp3 --stt deepgram` makes a track that **every** character can use.

@@ -84,7 +84,7 @@ class Preview {
     const i = this.puppet.info(), items = [];
     if (what === 'all' || what === 'poses') for (const p of [...i.talkable, ...i.silent]) items.push({ kind: 'pose', id: p, dur: 1.3, silent: i.silent.includes(p) });
     if (what === 'all' || what === 'exprs') for (const e of i.expressions) items.push({ kind: 'expression', id: e, dur: 1.3 });
-    if (what === 'all' || what === 'cycles') for (const c of i.cycles) items.push({ kind: 'cycle', id: c, dur: 2.4 });
+    if (what === 'all' || what === 'cycles') for (const c of i.cycles) items.push({ kind: 'cycle', id: c, dur: c === 'run' ? 3 : 5 });
     if (!items.length) return this.say('Nothing to show for that.');
     let t = 0; for (const it of items) { it.at = t; t += it.dur; }
     this.show = { items, total: t, t0: performance.now() / 1000 };
@@ -129,17 +129,25 @@ class Preview {
       st.eyes = life.eyes; st.breathe = life.breathe;
       if (!this.playing) { st.mouth = 'X'; st.open = 0; }
       const pose = this.pose.value;
-      if (pose.startsWith('cycle:')) { const id = pose.slice(6); st.cycle = { id, frame: Math.floor(now * (id === 'run' ? 15 : 12)) }; }
+      let travel = null;
+      if (pose.startsWith('cycle:')) { const id = pose.slice(6); st.cycle = { id, frame: 0 }; travel = { id, t: now }; }
       let label = null, fit = this.fit.value;
       if (this.show) {
         const S = this.show, lt = (now - S.t0) % S.total, k = S.items.findIndex((it) => lt >= it.at && lt < it.at + it.dur), it = S.items[k];
         delete st.cycle; delete st.tweenOf;
         if (it.kind === 'pose') { st.pose = it.id; if (lt - it.at < 0.1 && this.puppet.pack.poses[it.id]?.tween) st.tweenOf = it.id; }
         else if (it.kind === 'expression') { st.pose = this.puppet.has('idle') ? 'idle' : 'master'; st.expr = it.id; fit = fit === 'body' ? 'bust' : fit; }
-        else { st.cycle = { id: it.id, frame: Math.floor((lt - it.at) * (it.id === 'run' ? 15 : 12)) }; fit = 'body'; }
+        else { st.cycle = { id: it.id, frame: 0 }; travel = { id: it.id, t: lt - it.at }; fit = 'body'; }
+        if (it.kind !== 'cycle') travel = null;
         label = `${it.kind}: ${it.id}${it.silent ? ' (silent)' : ''}   ${k + 1}/${S.items.length}`;
       }
-      const place = this.perfObj.fit(600, 800, fit);
+      const place = this.perfObj.fit(600, 800, travel ? 'body' : fit, travel ? 0.14 : 0.06);
+      if (travel) { // walk / run ACROSS the stage at the cycle's own stride, so the feet grip the ground
+        const cy = this.puppet.pack.cycles[travel.id], fps = cy.fps || (travel.id === 'run' ? 15 : 12);
+        st.cycle.frame = Math.floor(travel.t * fps); delete st.breathe;
+        if (cy.stride) { const v = (cy.stride * place.scale * fps) / cy.frames.length, span = 600 + 0.7 * this.puppet.pack.height * place.scale; place.x = -0.35 * this.puppet.pack.height * place.scale + ((travel.t * v) % span); }
+        const gy = place.y + 3; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.strokeStyle = 'rgba(0,0,0,.14)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(600, gy); ctx.stroke();
+      }
       try { this.puppet.draw(ctx, st, place); } catch (e) { this.say(String(e.message || e)); }
       if (label) {
         ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.font = '600 22px ui-sans-serif, system-ui, sans-serif';

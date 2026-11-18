@@ -58,8 +58,7 @@ exprs = {os.path.basename(f)[5:-4]: os.path.basename(f) for f in sorted(glob.glo
 if os.path.exists(W('eyes-closed.png')) or exprs:
     build['eyes'] = {'box': eyes, **({'openings': openings} if openings else {}), **({'closed': 'eyes-closed.png'} if os.path.exists(W('eyes-closed.png')) else {}), **exprs}
 for f in sorted(glob.glob(W('pose-*.png'))): build['poses'][os.path.basename(f)[5:-4]] = os.path.basename(f)
-cyc = {os.path.basename(f)[6:-4]: os.path.basename(f) for f in sorted(glob.glob(W('cycle-*.png')))}
-if cyc: build['cycles'] = cyc
+# walk / run sheets are fitted by tools/cycle_fit.py (same size, one ground line), not by the builder
 json.dump(build, open(W('build.json'), 'w'), indent=1)
 
 im = Image.open(W('master.png')).convert('RGBA'); bg = Image.new('RGBA', im.size, 'white'); bg.alpha_composite(im); d = ImageDraw.Draw(bg)

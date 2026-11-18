@@ -81,7 +81,7 @@ Pick one route:
 
 | You have | Do this |
 |---|---|
-| **A few photos of a person** | Studio → **Create** → *New character from photos*. Upload, check the drawing looks like them, press build. About 28 image calls and 5–10 minutes; you get poses, expressions, blinks and lip-sync with no settings. Command line: `node cli/auto.mjs master work/<id>` then `rest` |
+| **A few photos of a person** | Studio → **Create** → *New character from photos*. Upload, check the drawing looks like them, press build. About 30 image calls and 5–10 minutes; you get poses, expressions, blinks, walk/run and lip-sync with no settings. Command line: `node cli/auto.mjs master work/<id>` then `rest` |
 | A finished drawing + a few edited copies (eyes closed, a few poses) | Studio → **Create**. Click the lips, drag the eye box, add poses, then **Download .char** |
 | Just a reference (photo, book illustration, sketch) | `tools/gen-images.mjs` generates the full image set with an AI image model, then load it in the Studio (or `char build`) |
 | A folder of images + `build.json` (from the Studio's **Save build.json**) | `npm run char -- build <folder> --sheet qa.png` (no clicking) |
@@ -116,6 +116,7 @@ studio/       browser app: library, create, embed snippets   render/      headle
 mouthlib/     shared mouths: female/male × 7 moods × 9 visemes
 tools/        setup-rhubarb · gen-images (AI image set) · drawn_mouths + gen-mouths (mouths in the character's own style)
               eye_states (one patch per expression: no double eyebrows) · locate + auto_rig (find mouth and eyes)
+              gen-cycles + cycle_fit (clean walk / run) · tts (ElevenLabs voice line + lip-sync, any language)
               judge (GPT vision QA) · facial_hair.py · import_rig.py (legacy rig folders -> .char)
 examples/     web page · slide · scene · from-images (build.json example) · audio samples
 ```
