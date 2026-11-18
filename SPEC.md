@@ -69,7 +69,8 @@ Every character has a **canvas**, e.g. 1024×1536. The master pose and every oth
     "mouthStyle": "drawn", "mouthStretch": false,   // optional: drawn mouths (each viseme = a soft-edged patch of the
                                                     // character's own face). No cover; only a "neutral" set; no stretch.
 
-    // ONE of the two eye systems:
+    // ONE of the two eye systems. Use states: each tile covers eyes AND eyebrows, so nothing of the neutral face shows
+    // through. The layers system is kept only for old files (it can show double eyebrows).
     "states": {                          // (a) states face: one tile per expression × eye state
       "neutral": { "camera": {"image": "face/states/neutral-camera.png", "at": [364, 212]},
                    "closed": {…}, "left": {…}, "right": {…}, "down": {…} },

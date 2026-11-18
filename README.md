@@ -2,7 +2,7 @@
 
 One file per character. Any `.char` can talk, change expression and pose, and walk in a **web page, an HTML slide, a rendered video (MP4 or transparent overlay) or a multi-character scene**. You don't rig anything again and you don't generate new images per video.
 
-Comes with **Bhasha, Fardin, Rifat and Prapti**, ready to use.
+Comes with **Bhasha, Fardin, Rifat, Prapti, Aditya and Durjoy**, ready to use.
 
 ![Studio library](docs/studio-library.jpg)
 
@@ -52,6 +52,15 @@ Change poses and expressions over time with `--cues cues.json`, e.g. `[{"at":1.2
 npm run char -- render --scene examples/scene/scene.json -o scene.mp4
 ```
 
+**Claude artifact, or any single page that can't load outside files.** In the Studio's Library, pick a character, tick the poses you need and press **Copy code for artifact** (or **Download .html**). You get one self-contained HTML file, a few hundred KB, with the character and a small player inside. Paste it into Claude and ask for an artifact, or attach the file.
+
+```js
+const who = await DotChar.mount(canvas, CHAR_DATA, { pose: 'explain', expression: 'happy', fit: 'bust' });
+await who.playAudio('line.mp3');         // best: the mouth follows the sound itself, live. No track needed
+await who.say('Hello! Welcome to class.'); // or the browser's voice, mouth follows the words (approximate)
+who.setPose('wave'); who.setExpression('surprised');
+```
+
 **Your own code (canvas, Remotion, games)**
 
 ```js
@@ -64,7 +73,7 @@ perf.draw(ctx, t, perf.fit(canvas.width, canvas.height, 'bust'));   // t = audio
 
 In the Studio's Library, **▶ Play all movements** loops through every pose, expression and walk/run cycle of the selected character, each one labelled.
 
-What can each character do? `npm run char -- validate characters/bhasha.char` lists its talkable poses, silent poses, expressions and walk/run cycles.
+What can each character do? `npm run char -- validate characters/bhasha.char` lists its talkable poses, silent poses, expressions and walk/run cycles. `npm run char -- sheet characters/bhasha.char` draws every expression, blink and mouth shape on one sheet.
 
 ## Make a new character
 
@@ -72,6 +81,7 @@ Pick one route:
 
 | You have | Do this |
 |---|---|
+| **A few photos of a person** | Studio → **Create** → *New character from photos*. Upload, check the drawing looks like them, press build. About 28 image calls and 5–10 minutes; you get poses, expressions, blinks and lip-sync with no settings. Command line: `node cli/auto.mjs master work/<id>` then `rest` |
 | A finished drawing + a few edited copies (eyes closed, a few poses) | Studio → **Create**. Click the lips, drag the eye box, add poses, then **Download .char** |
 | Just a reference (photo, book illustration, sketch) | `tools/gen-images.mjs` generates the full image set with an AI image model, then load it in the Studio (or `char build`) |
 | A folder of images + `build.json` (from the Studio's **Save build.json**) | `npm run char -- build <folder> --sheet qa.png` (no clicking) |
@@ -105,6 +115,7 @@ lipsync/      audio + words -> viseme track                  cli/         npm ru
 studio/       browser app: library, create, embed snippets   render/      headless pages used by the CLI
 mouthlib/     shared mouths: female/male × 7 moods × 9 visemes
 tools/        setup-rhubarb · gen-images (AI image set) · drawn_mouths + gen-mouths (mouths in the character's own style)
+              eye_states (one patch per expression: no double eyebrows) · locate + auto_rig (find mouth and eyes)
               judge (GPT vision QA) · facial_hair.py · import_rig.py (legacy rig folders -> .char)
 examples/     web page · slide · scene · from-images (build.json example) · audio samples
 ```

@@ -5,6 +5,7 @@
  *
  *   node tools/gen-images.mjs <dir> --stage master     # ref photo/drawing(s) -> front-facing full-body master.png
  *   node tools/gen-images.mjs <dir> --stage face       # mouthless.png, eyes-closed.png, expr-<mood>.png (6 moods)
+ *   node tools/gen-images.mjs <dir> --stage blinks     # blink-<mood>.png: each expression with the eyes closed (after face)
  *   node tools/gen-images.mjs <dir> --stage poses      # pose-<id>.png (10 defaults + yours), head locked
  *   node tools/gen-images.mjs <dir> --stage cycles     # cycle-walk.png, cycle-run.png (4-frame side-view sheets)
  *   node tools/gen-images.mjs <dir> --stage poses --add hold-book "holding a red book against the chest with both hands"
@@ -25,7 +26,7 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > -1 ? process.argv[i + 1] : d; };
 const flag = (k) => process.argv.includes(k);
-const dir = path.resolve(process.argv[2] || die('usage: gen-images.mjs <dir> --stage master|face|poses|cycles'));
+const dir = path.resolve(process.argv[2] || die('usage: gen-images.mjs <dir> --stage master|face|blinks|poses|cycles'));
 const stage = arg('--stage', 'master'), force = flag('--force'), only = arg('--only')?.split(',');
 const MODEL = arg('--model', process.env.CHAR_IMAGE_MODEL || 'gpt-image-1');
 function die(m) { console.error(m); process.exit(1); }
@@ -69,7 +70,7 @@ const MOODS = {
   worried: 'WORRIED: eyebrows raised in the middle and wavy, eyes wide, anxious',
   excited: 'EXCITED: eyes opened WIDE and sparkling with big highlights, eyebrows raised HIGH and arched, thrilled',
 };
-const eyesOnly = (what) => `Edit the supplied character image: change ONLY the EYEBROWS and the EYES (eyelids, eye shape) to: ${what}. Same iris colour, lashes and art style. ${cfg.glasses ? 'The glasses stay exactly as drawn with clear lenses.' : 'Do NOT add glasses, masks or face paint.'} Do NOT change the mouth, nose, hair or face shape. ${KEEP}`;
+const eyesOnly = (what) => `Edit the supplied character image: change ONLY the EYEBROWS and the EYES (eyelids, eye shape) to: ${what}. Same iris colour, lashes and art style. If the character wears glasses they stay EXACTLY as drawn: same frames, same thickness and colour, same position, clear lenses. Never add glasses, masks or face paint that are not already there. Do NOT change the mouth, nose, hair or face shape. ${KEEP}`;
 
 const refs = (cfg.refs || (cfg.ref ? [cfg.ref] : [])).map((r) => path.resolve(dir, r));
 const jobs = [];
@@ -97,8 +98,13 @@ One character only, centred, whole body inside the frame with padding, feet ~60p
   if (!fs.existsSync(master)) die('master.png missing: run --stage master first (and approve it)');
   if (stage === 'face') {
     job('mouthless.png', `Edit the supplied character image: REMOVE THE MOUTH completely. Where the lips were, paint smooth continuous skin matching the surrounding cheek and chin colour and shading. Only the lips become skin: a moustache or beard stays exactly as drawn. ${KEEP}`, [master]);
-    job('eyes-closed.png', `Edit the supplied character image: close BOTH EYES gently and calmly, a relaxed blink (not squeezed): each eye becomes one smooth downward-curved lid line with a few lashes. Change ONLY the eye openings; eyebrows, glasses and everything else stay. ${KEEP}`, [master]);
+    job('eyes-closed.png', `Edit the supplied character image: close BOTH EYES gently and calmly, a relaxed blink (not squeezed): each eye becomes one smooth downward-curved lid line with a few lashes. Change ONLY the eye openings; eyebrows and everything else stay. Glasses (if worn) stay EXACTLY as drawn: same frames, thickness, colour and position. ${KEEP}`, [master]);
     for (const [m, t] of Object.entries(MOODS)) job(`expr-${m}.png`, eyesOnly(t), [master]);
+  } else if (stage === 'blinks') {
+    // each expression's own blink: same brows, eyes closed (run after --stage face). Without these, a blink during an
+    // expression would have to borrow the neutral lids.
+    for (const m of Object.keys(MOODS)) if (fs.existsSync(out(`expr-${m}.png`)))
+      job(`blink-${m}.png`, `Edit the supplied character image: close BOTH EYES gently and calmly, a relaxed blink (not squeezed): each eye becomes one smooth downward-curved lid line with a few lashes. Change ONLY the eye openings. The EYEBROWS stay exactly as they are now (same shape, height and angle: this is a blink of this exact expression). Glasses (if worn) stay EXACTLY as drawn: same frames, thickness, colour and position. ${KEEP}`, [out(`expr-${m}.png`)]);
   } else if (stage === 'poses') {
     const add = arg('--add');
     if (add) { cfg.poses = { ...(cfg.poses || {}), [add]: process.argv[process.argv.indexOf('--add') + 2] }; fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2)); }

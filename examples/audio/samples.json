@@ -1,6 +1,38 @@
 [
- { "char": "bhasha", "label": "Bhasha: \"Hi, I'm Bhasha! Welcome to my parents' restaurant…\"", "audio": "bhasha-hello.mp3", "track": "bhasha-hello.lipsync.json" },
- { "char": "fardin", "label": "Fardin: \"Woah, is that the one about building a moon buggy?\"", "audio": "fardin-hello.mp3", "track": "fardin-hello.lipsync.json" },
- { "char": "rifat", "label": "Rifat: \"Woah, is that the one about building a moon buggy?\"", "audio": "rifat-hello.mp3", "track": "rifat-hello.lipsync.json" },
- { "char": "prapti", "label": "Prapti: \"Woah, is that the one about building a moon buggy?\"", "audio": "prapti-hello.mp3", "track": "prapti-hello.lipsync.json" }
+ {
+  "char": "bhasha",
+  "label": "Bhasha: \"Hi, I'm Bhasha! Welcome to my parents' restaurant…\"",
+  "audio": "bhasha-hello.mp3",
+  "track": "bhasha-hello.lipsync.json"
+ },
+ {
+  "char": "fardin",
+  "label": "Fardin: \"Woah, is that the one about building a moon buggy?\"",
+  "audio": "fardin-hello.mp3",
+  "track": "fardin-hello.lipsync.json"
+ },
+ {
+  "char": "rifat",
+  "label": "Rifat: \"Woah, is that the one about building a moon buggy?\"",
+  "audio": "rifat-hello.mp3",
+  "track": "rifat-hello.lipsync.json"
+ },
+ {
+  "char": "prapti",
+  "label": "Prapti: \"Woah, is that the one about building a moon buggy?\"",
+  "audio": "prapti-hello.mp3",
+  "track": "prapti-hello.lipsync.json"
+ },
+ {
+  "char": "aditya",
+  "label": "Aditya: \"Woah, is that the one about building a moon buggy?\"",
+  "audio": "aditya-hello.mp3",
+  "track": "aditya-hello.lipsync.json"
+ },
+ {
+  "char": "durjoy",
+  "label": "Durjoy: \"Woah, is that the one about building a moon buggy?\"",
+  "audio": "durjoy-hello.mp3",
+  "track": "durjoy-hello.lipsync.json"
+ }
 ]

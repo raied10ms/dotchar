@@ -38,6 +38,14 @@
   .chips label { border:1px solid var(--line); border-radius:999px; padding:2px 10px; font-size:12.5px; cursor:pointer; user-select:none; }
   .chips label:has(input:checked) { background:var(--acc2); color:#fff; border-color:var(--acc2); } .chips input { display:none; }
   a.b { text-decoration:none; }
+  .auto { display:grid; grid-template-columns:minmax(340px, 460px) minmax(360px, 520px); gap:18px; align-items:start; }
+  .auto .ctl { grid-template-columns:1.4fr .8fr 1.2fr; } .auto .field { margin:8px 0; } .auto .field > span { display:block; font-size:12px; color:var(--mute); margin-bottom:3px; }
+  .thumbs { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; } .thumbs img { width:64px; height:64px; object-fit:cover; border-radius:8px; }
+  #aMaster { width:100%; max-height:62vh; object-fit:contain; background:repeating-conic-gradient(#efebe3 0 25%, #f8f6f1 0 50%) 0 0/20px 20px; border-radius:8px; }
+  #aCheck { width:220px; border-radius:8px; margin-top:8px; }
+  .prog { height:10px; background:var(--bg); border-radius:99px; overflow:hidden; } .prog i { display:block; height:100%; width:0; background:var(--acc); transition:width .6s; }
+  details.adv { margin-top:22px; } details.adv > summary { cursor:pointer; color:var(--mute); padding:8px 0; } details.adv[open] > summary { margin-bottom:10px; }
+  #aStage canvas { width:100%; aspect-ratio:3/4; background:repeating-conic-gradient(#efebe3 0 25%, #f8f6f1 0 50%) 0 0/20px 20px; border-radius:8px; display:block; }
   @media (max-width: 1100px) { .lib { grid-template-columns:170px 1fr; } .lib .preview { grid-column:2; grid-row:1; position:static; } .ctlcol { grid-column:2; } }
   .preview canvas { width:100%; aspect-ratio:3/4; background:repeating-conic-gradient(#efebe3 0 25%, #f8f6f1 0 50%) 0 0/20px 20px; border-radius:8px; display:block; }
   .ctl { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; } .ctl label { font-size:12px; color:var(--mute); }
@@ -83,7 +91,7 @@
           <div class="field"><span class="hint">Poses to include (fewer = smaller)</span><div id="expPoses" class="chips"></div></div>
           <div class="ctl">
             <div><label>Image size</label><select id="expSize"><option value="384">small (384 px)</option><option value="512" selected>medium (512 px)</option><option value="768">large (768 px)</option></select></div>
-            <div><label>Sample voice line</label><select id="expLine"><option value="0">leave out</option><option value="1">include</option></select></div>
+            <div><label>Voice line inside the file</label><select id="expLine"><option value="0">leave out</option><option value="1">include the sample line</option><option value="2">include my last lip-synced audio</option></select></div>
           </div>
           <div class="bar"><button class="b p" id="expCopy">Copy code for artifact</button><button class="b" id="expHtml">Download .html</button><span class="hint" id="expSizeInfo"></span></div>
           <p class="hint" style="margin-top:14px"><b>Everything</b> (all poses, full quality) for videos, slides and web pages:</p>
@@ -96,6 +104,47 @@
   </section>
 
   <section id="create">
+    <div class="auto">
+      <div class="card">
+        <h3 style="margin:0 0 4px">New character from photos</h3>
+        <p class="hint" style="margin:0 0 10px">Upload a few photos of the person. The studio draws them, makes the poses and expressions, and sets up lip-sync. You only check that the drawing looks like them.</p>
+        <div class="field"><span>Name</span><input type="text" id="aName" placeholder="e.g. Tuhin"></div>
+        <div class="field"><span>Photos (1 to 6; clearest front-facing one first)</span>
+          <label class="b">Choose photos…<input type="file" id="aPhotos" accept="image/*" multiple></label>
+          <div id="aThumbs" class="thumbs"></div></div>
+        <div class="field"><span>Outfit (optional)</span><input type="text" id="aOutfit" placeholder="e.g. navy polo, black trousers, white sneakers. Empty = as in the first photo"></div>
+        <div class="ctl">
+          <div><label>Look</label><select id="aStyle"><option value="painterly">painted caricature (like the teachers)</option><option value="cartoon">flat cartoon</option></select></div>
+          <div><label>Lips</label><select id="aLips"><option value="female">female</option><option value="male">male</option></select></div>
+          <div><label>Poses</label><select id="aPoses"><option value="quick">5 poses (about 28 images)</option><option value="full">10 poses (about 33 images)</option></select></div>
+        </div>
+        <div class="bar"><button class="b p" id="aStart">1 · Draw the character</button><span class="hint">1 image, about a minute</span></div>
+        <div class="status" id="aMsg"></div>
+      </div>
+      <div class="card" id="aStage">
+        <div id="aIdle" class="hint" style="padding:40px 10px;text-align:center">The drawing appears here for you to check.</div>
+        <div id="aApprove" hidden>
+          <h3 style="margin:0 0 8px">Does this look like them?</h3>
+          <img id="aMaster" alt="master drawing">
+          <div class="field"><input type="text" id="aNote" placeholder="If not: what should change? e.g. rounder face, shorter beard, keep the glasses"></div>
+          <div class="bar"><button class="b p" id="aGo">2 · Yes, build the rest</button><button class="b" id="aRedo">Try again</button></div>
+          <p class="hint">After you approve, the face is never redrawn: every pose and mouth is made from this exact drawing. For a real person, get their OK on it first.</p>
+        </div>
+        <div id="aWork" hidden>
+          <h3 style="margin:0 0 8px" id="aStep">Working…</h3>
+          <div class="prog"><i id="aBar"></i></div>
+          <p class="hint" id="aEta">This takes 5 to 10 minutes. You can leave this tab open and do something else.</p>
+          <img id="aCheck" alt="" hidden>
+        </div>
+        <div id="aDone" hidden>
+          <div id="pvAuto"></div>
+          <div class="bar"><a class="b p" id="aDownload" download>Download .char</a><button class="b" id="aPublish">Add to the library</button><a class="b" id="aSheet" target="_blank">Mouth sheet</a></div>
+          <div class="status" id="aResult"></div>
+        </div>
+      </div>
+    </div>
+    <details class="adv">
+      <summary>Advanced: build from images I already have (set the mouth, eyes and poses by hand)</summary>
     <div class="row">
       <div class="steps">
         <div class="card">
@@ -151,6 +200,7 @@
       </div>
       <div class="preview card" id="pvCreate"></div>
     </div>
+      </details>
   </section>
 
   <section id="use">

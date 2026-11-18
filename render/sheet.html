@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><body>
+<script type="module">
+// Headless target for `char sheet`: every expression (eyes open + blink) and every mouth shape of a .char, face close-up.
+import { loadChar } from '../runtime/char.js';
+import { Performance } from '../runtime/player.js';
+const job = await (await fetch(new URLSearchParams(location.search).get('job'))).json();
+try {
+  const pup = await loadChar(job.char), info = pup.info(), perf = new Performance(pup, { life: false });
+  const pose = job.pose && pup.has(job.pose) ? job.pose : 'master';
+  const cell = job.cell || 260, V = ['X', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  const rows = [];
+  rows.push(info.expressions.map((e) => ({ label: e, st: { pose, expr: e, mouth: 'X' } })));
+  rows.push(info.expressions.map((e) => ({ label: `${e} · blink`, st: { pose, expr: e, mouth: 'X', eyes: 'closed' } })));
+  rows.push(V.map((v) => ({ label: `mouth ${v}`, st: { pose, expr: 'neutral', mouth: v, open: 0.5 } })));
+  const cols = Math.max(...rows.map((r) => r.length));
+  const c = document.createElement('canvas'); c.width = cell * cols; c.height = cell * rows.length;
+  const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+  const place = perf.fit(cell, cell, job.fit || 'face', 0.02);
+  rows.forEach((row, r) => row.forEach((it, k) => {
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.beginPath(); ctx.rect(k * cell, r * cell, cell, cell); ctx.clip();
+    pup.draw(ctx, it.st, { ...place, x: place.x + k * cell, y: place.y + r * cell });
+    ctx.restore(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#d9480f'; ctx.font = 'bold 15px sans-serif'; ctx.fillText(it.label, k * cell + 6, r * cell + 18);
+  }));
+  window.sheet = c.toDataURL('image/png').split(',')[1];
+  window.ready = true;
+} catch (e) { window.failed = String(e && e.stack || e); }
+</script>

@@ -6,6 +6,7 @@
  *   pack <folder> [-o out.char]          folder with char.json + images -> one .char file (validated first)
  *   unpack <file.char> [folder]          .char -> folder (edit, then pack again)
  *   validate <file.char|folder>          check against SPEC.md, print what the character can do
+ *   sheet <file.char> [-o sheet.png] [--pose master] [--fit face]   QA sheet: every expression, every blink, every mouth
  *   list                                 characters/*.char, and rewrite characters/index.json (used by the studio)
  *   lipsync <audio> [--stt deepgram|openai] [--words w.json] [--lang en|bn] [-o track.json]
  *   render --char x.char --audio line.mp3 [--track t.json | --stt deepgram] [--pose explain] [--expr happy]
@@ -103,6 +104,12 @@ if (cmd === 'pack') {
   console.log(`-> ${out}: ${track.mode}, ${track.cues.length} mouth changes, ${track.duration}s${track.warnings.length ? `, ${track.warnings.length} held-mouth warnings` : ''}`);
 } else if (cmd === 'render') {
   await render();
+} else if (cmd === 'sheet') {
+  const src = pos[0] || die('usage: sheet <file.char> [-o sheet.png] [--pose master] [--fit face]');
+  const jobFile = path.join(ROOT, 'render', `.job-${process.pid}.json`);
+  fs.writeFileSync(jobFile, JSON.stringify({ char: fsUrl(src), pose: opt('--pose'), fit: opt('--fit'), cell: +opt('--cell', 260) }));
+  const { page, close } = await browserPage(jobFile, 'sheet.html');
+  try { const out = opt('-o', src.replace(/\.char$/, '') + '-sheet.png'); fs.writeFileSync(out, Buffer.from(await page.evaluate(() => window.sheet), 'base64')); console.log(`-> ${out}`); } finally { await close(); }
 } else if (cmd === 'build') {
   await build();
 } else {

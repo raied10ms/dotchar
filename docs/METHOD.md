@@ -6,7 +6,7 @@ We don't animate the body bone by bone. Each body pose is one finished drawing, 
 
 - a set of full-body pose images that all keep the head in the same place,
 - a **cover**, a small skin patch drawn over the mouth on the body images,
-- **eye tiles** for blinking and for each expression,
+- **eye patches**: one per expression and one per expression's blink, each covering eyes and eyebrows together,
 - a **mouth** in 9 shapes (visemes). It comes either from one shared library, scaled and recoloured for this face, or from shapes drawn on the character's own face (see "Two kinds of mouth").
 
 For each pose we measure where the head moved compared to the master (the `head` transform) and draw the face layers through that transform. So one set of face layers talks on every pose. A 40-minute episode needs no new images. It is just data: a pose name, an expression and a lip-sync track for each moment.
@@ -57,6 +57,23 @@ What goes wrong, and the fix:
 Read the judge's fixes, but don't chase a perfect score. It is deliberately harsh: the three shipped teachers score 6–8 per criterion, with 10 for rest pose. Stop when likeness and rest pose are high, facial hair is intact, and no single shape looks wrong to *you* at playback size.
 
 **Library mouths on a bearded face (fallback, no image calls).** Turn on **Beard or moustache** in the Studio, or set `"facialHair": true` in `build.json`. The cover shrinks to the lips only, and the moustache is drawn over the mouth as an `overMouth` layer. It keeps the hair visible, but the mouth is still a flat cartoon one, so use drawn mouths for anything that will be seen up close.
+
+## Eyes and eyebrows: one patch per face state
+
+Every expression, and every expression's blink, is **one patch that covers the eyes and the eyebrows together**. It is cut from that state's own full drawing and lined up with the master.
+
+Don't stack separate eye, brow and blink layers over the neutral face. The neutral eyebrows stay visible under the expression's eyebrows (double eyebrows), and one eye can change while the other doesn't.
+
+```sh
+node tools/gen-images.mjs work/<id> --stage face      # eyes-closed.png + expr-<mood>.png (6 moods)
+node tools/gen-images.mjs work/<id> --stage blinks    # blink-<mood>.png: each expression with its eyes closed
+python3 tools/eye_states.py <unpacked char folder> --master work/<id>/master.png --dir work/<id> --sheet eyes-qa.png
+```
+
+- The tool finds the two eye openings from what changed between the master and `eyes-closed.png`, then grows the patch until it holds every expression's brows. If it picks the wrong thing (squinting eyes, glasses arms), pass `--eyes x0,y0,x1,y1`, a box around both eye openings.
+- **Glasses must be identical in every drawing.** The prompts ask for that. If one drawing changes or drops the glasses, re-roll that drawing (`--only expr-sad --force`). Don't patch over it.
+- Check `eyes-qa.png`: one set of brows per state, both eyes changing together, glasses the same everywhere, no visible patch edge.
+- `npm run char -- sheet <id>.char` shows the finished character's expressions, blinks and mouths on one sheet.
 
 ## Lip-sync, in three evidence sources
 

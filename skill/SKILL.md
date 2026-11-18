@@ -46,6 +46,12 @@ Run `npm run char -- list` to see the library. Run `npm run char -- validate cha
      - Transparent overlay: `--bg transparent -o out.webm` (or `.mov`).
      - Background image: `--bg bg.png`.
      - Gestures over time: `--cues cues.json`, e.g. `[{"at":1.2,"pose":"point","dur":1.5},{"at":2,"expr":"surprised"}]`.
+   - Claude artifact / single file: Studio → Library → **Copy code for artifact** or **Download .html**. That file embeds a slimmed character, a player and a lip-sync guide. To build on it, keep its `CHAR_DATA` and `PLAYER` script blocks unchanged and write the page around them. Lip-sync inside it, best first:
+     - `await who.playAudio(url)`: any voice audio; the mouth follows the sound live, no track needed.
+     - `await who.play(track, url)`: a `*.lipsync.json` track from `char lipsync`.
+     - `await who.say(text)`: the browser's voice; approximate, and silent in some sandboxes (the mouth still moves).
+
+     Chain lines with `await` (each call resolves when the line ends), start from a user click, and never time lines with your own `setTimeout` guesses or call `speechSynthesis` separately.
    - Web page or slide: `<char-player src=… audio=… track=… pose=… expression=… fit=…>` (see `examples/slide/slide.html`). The page must be served over http (`npm run studio` serves the repo), not opened as `file://`.
    - Scene: copy `examples/scene/scene.json`. In it:
      - `cast`: char path, x/y, `height` in px, `face` L/R
@@ -59,9 +65,23 @@ Run `npm run char -- list` to see the library. Run `npm run char -- validate cha
    ```
    Check that the mouth is moving, sits on the lips and the pose is right.
 
+Before handing over any character, run `npm run char -- sheet characters/<id>.char` and look at every expression, blink and mouth.
+
 Framing rule: important dialogue goes in `bust` or `face`. In a wide full-body shot only open/closed reads.
 
 ## 3. Create a new character
+
+**Fast path: photos of a real person → finished `.char`, no measuring.** Use this unless the user wants control over each step.
+1. Make `work/<id>/`, put the photos in `work/<id>/ref/`, and write `work/<id>/character.json`:
+   `{"name": "...", "refs": ["ref/1.jpg", ...], "likeness": {"outfit": "..."}, "style": "glossy painterly cel-shaded caricature with crisp clean line work", "lipsSet": "female|male", "poses": "quick|full", "mouths": "drawn"}`
+2. `node cli/auto.mjs master work/<id>` (1 image call). Show `work/<id>/master.png` to the user and **wait for their approval**. To redo, put the correction in `"identity"` and run it again.
+3. `node cli/auto.mjs rest work/<id>` (about 27 calls for 5 poses, 32 for 10; 5–10 minutes). It draws the eyes, expressions, blinks and poses, finds the mouth and eyes, rigs, builds the eye patches, draws the mouths, packs and runs the judge.
+4. Look at `work/<id>/locate-check.png` (orange box on the lips, blue box on eyes and brows), `work/<id>/qa-eyes.png` (every expression and blink) and `work/<id>/qa.png` (every mouth). If a box is off, fix `build.json` and continue from step D below. If a mouth shape is bad, re-roll it as in D2.
+5. Result: `work/<id>/<id>.char`. `status.json` lists silent poses and the judge scores. Then go to E and F.
+
+The same flow is the Studio's Create tab (*New character from photos*).
+
+**Step by step (full control):**
 
 Work in a new folder outside `characters/`, e.g. `work/<id>/`.
 
@@ -90,13 +110,14 @@ Check `master.png` against `docs/METHOD.md`:
 **C. Everything else (about 20 calls).**
 ```
 node tools/gen-images.mjs work/<id> --stage face     # mouthless, eyes-closed, 6 expressions
+node tools/gen-images.mjs work/<id> --stage blinks   # each expression with its eyes closed
 node tools/gen-images.mjs work/<id> --stage poses    # 10 default poses (+ --add <id> "<description>")
 node tools/gen-images.mjs work/<id> --stage cycles   # optional walk/run sheets
 ```
 Look at every output. Redo a bad one with `--only <name> --force`. These count as bad:
 - the head moved or turned in a pose,
 - a hand is on the face,
-- an expression changed the mouth or hair a lot,
+- an expression changed the mouth or hair a lot, or changed, thinned or dropped the glasses,
 - the background isn't transparent.
 
 **D. Rig.** Write `work/<id>/build.json` (format in `SPEC.md`). The values you have to find:
@@ -120,6 +141,12 @@ npm run char -- build work/<id> --sheet work/<id>/qa.png
   - the jaw stays above the chin.
 
   Adjust `mouth.width`, `mouth.cover` or `lipColour` (hex), or supply a better `mouthless`, then rebuild.
+
+**D1. Eyes: one patch per expression (always).** On the unpacked character (`npm run char -- unpack <id>.char work/<id>/char`):
+```
+python3 tools/eye_states.py work/<id>/char --master work/<id>/master.png --dir work/<id> --sheet work/<id>/qa-eyes.png
+```
+Look at the sheet. Each state must have one set of eyebrows, both eyes must change together, and the glasses must be identical everywhere. If the eye openings were detected wrongly, pass `--eyes x0,y0,x1,y1`. If a drawing changed the glasses, re-roll that drawing; never ship double eyebrows.
 
 **D2. Choose the mouth type by art style. Decide this before step E.**
 - Flat cel-shaded cartoon → keep the library mouths from step D.

@@ -43,12 +43,34 @@ export async function embedHtml(data, { pose, expression = 'neutral', fit = 'bus
 <meta charset="utf-8">
 <title>${P.name} (.char)</title>
 <!--
-  ${P.name}: a self-contained talking character. No outside files, works offline and inside Claude artifacts.
-  USE IT IN YOUR OWN PAGE / ARTIFACT: keep the two <script> blocks marked CHAR_DATA and PLAYER, then:
+  ${P.name}: a self-contained talking character. No outside files; works offline and inside Claude artifacts.
+
+  HOW TO USE THIS IN YOUR OWN PAGE / ARTIFACT
+  Keep the two <script> blocks marked CHAR_DATA and PLAYER exactly as they are (do not shorten or rewrite them), then:
+
       const who = await DotChar.mount(canvasElement, CHAR_DATA, { pose: '${pose || info[0]}', expression: 'neutral', fit: 'bust' });
-      who.say('Hello!');                 // browser voice + mouth movement from the text
-      who.setPose('${info[info.length - 1]}'); who.setExpression('happy'); who.setFit('face');   // fit: face | bust | body
-      who.play(track, audioUrl);         // a real voice line + its lipsync.json track
+      who.setPose('${info[info.length - 1]}'); who.setExpression('happy'); who.setFit('face');      // fit: face | bust | body
+
+  LIP-SYNC (each call returns a Promise that resolves when the line ends: chain lines with await)
+    1. await who.playAudio(url)      BEST. Any recorded or generated voice (mp3 / wav; file, blob: or data: URL). The mouth
+                                     follows the sound itself, live, so it is always in sync. No track needed.
+    2. await who.play(track, url)    A pre-computed track for that audio (the Studio's *.lipsync.json):
+                                     { fps: 30, duration: seconds, frames: "XXABCD..." (one mouth letter per frame), open: [0..1 per frame] }
+    3. await who.say('Hello!')       No audio file: the browser's own voice speaks and the mouth follows the words.
+                                     Approximate sync. Some sandboxes mute the browser voice: the mouth still moves, in silence.
+                                     Options: who.say(text, { rate: 1, lang: 'en-US', voice: 'Samantha', silent: false })
+  Mouth letters: X closed · A M/B/P · B teeth (S, T, EE) · C open (EH) · D wide (AH) · E round (OH) · F pucker (OO, W) · G F/V · H L/TH
+
+  RULES THAT KEEP IT IN SYNC
+    - Start the first line from a user click (browsers block sound before one).
+    - One line at a time per character: calling say/play/playAudio again stops the current line. Narration = a loop:
+          for (const line of script) { showCaption(line.text); who.setPose(line.pose); await who.say(line.text); }
+      Do NOT drive lines from your own setTimeout guesses: await the Promise, it resolves exactly when the line ends.
+    - Do not call speechSynthesis yourself for the same text: who.say() already speaks it. For a sound toggle use { silent: true }.
+    - Change poses and expressions between or during lines freely: they never interrupt the mouth.
+    - who.speaking is true while a line runs; who.stop() ends it; who.mouthTest() cycles all nine mouth shapes.
+    - Only talkable poses lip-sync: ${Object.keys(P.poses).filter((k) => P.poses[k].talkable).join(', ')}
+
   Poses: ${info.join(', ')}
   Expressions: ${exprs.join(', ')}
   (c) 10 Minute School. Internal use only.
@@ -59,6 +81,7 @@ export async function embedHtml(data, { pose, expression = 'neutral', fit = 'bus
   canvas { width: 100%; aspect-ratio: 3/4; display: block; border-radius: 10px; background: #fbf8f2; }
   .row { display: flex; gap: 8px; margin-top: 10px; } .row > * { flex: 1; min-width: 0; }
   input, select, button { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid #ddd6c8; background: #fff; }
+  .pick { flex: 1; text-align: center; padding: 8px 10px; border-radius: 8px; border: 1px solid #ddd6c8; cursor: pointer; }
   button { background: #d9480f; color: #fff; border-color: #d9480f; cursor: pointer; flex: 0 0 auto; }
 </style>
 </head>
@@ -70,7 +93,8 @@ export async function embedHtml(data, { pose, expression = 'neutral', fit = 'bus
     <select id="pose">${info.map((p) => `<option${p === pose ? ' selected' : ''}>${p}</option>`).join('')}</select>
     <select id="expr">${exprs.map((e) => `<option${e === expression ? ' selected' : ''}>${e}</option>`).join('')}</select>
     <select id="fit">${['bust', 'face', 'body'].map((f) => `<option${f === fit ? ' selected' : ''}>${f}</option>`).join('')}</select>
-  </div>${sample ? '\n  <div class="row"><button id="line" style="flex:1">▶ Play voice line</button></div>' : ''}
+  </div>
+  <div class="row">${sample ? '<button id="line" style="flex:1">▶ Play voice line</button>' : ''}<label class="pick">Lip-sync an audio file<input id="file" type="file" accept="audio/*" hidden></label></div>
 </div>
 <script>/* CHAR_DATA */ const CHAR_DATA = ${esc(JSON.stringify(data))};${sample ? `\nconst SAMPLE = ${esc(JSON.stringify(sample))};` : ''}</script>
 <script>/* PLAYER */ ${playerSrc.replace(/<\/script/g, '<\\/script')}</script>
@@ -84,6 +108,7 @@ export async function embedHtml(data, { pose, expression = 'neutral', fit = 'bus
   $('expr').onchange = (e) => who.setExpression(e.target.value);
   $('fit').onchange = (e) => who.setFit(e.target.value);
   if ($('line')) $('line').onclick = () => who.play(SAMPLE.track, SAMPLE.audio);
+  $('file').onchange = (e) => { const f = e.target.files[0]; if (f) who.playAudio(URL.createObjectURL(f)); };
   window.who = who;
 })();
 </script>

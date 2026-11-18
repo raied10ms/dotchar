@@ -111,7 +111,7 @@ class Preview {
     const r = await fetch(`/api/lipsync?ext=${ext}&stt=${this.stt.value}`, { method: 'POST', body: file });
     if (!r.ok) return this.say(`Lip-sync failed: ${await r.text()}`);
     const track = await r.json();
-    this.lastTrack = { track, name: file.name };
+    this.lastTrack = { track, name: file.name, file };
     this.play(track, URL.createObjectURL(file));
     this.say(`${file.name}: ${track.mode}, ${track.cues.length} mouth changes ${track.note || ''}`);
   }
@@ -208,7 +208,11 @@ async function buildExport() {
   const data = X.slim(p, { poses, maxH: +$('#expSize').value });
   let sample = null;
   const s = (pvLib.samples || []).find((x) => x.char === p.pack.id);
-  if ($('#expLine').value === '1' && s) {
+  if ($('#expLine').value === '2' && pvLib.lastTrack) {
+    const t = pvLib.lastTrack.track;
+    const audio = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(pvLib.lastTrack.file); });
+    sample = { track: { fps: t.fps, duration: t.duration, frames: t.frames, open: t.open }, audio };
+  } else if ($('#expLine').value === '1' && s) {
     const track = await (await fetch(`../examples/audio/${s.track}`)).json();
     const blob = await (await fetch(`../examples/audio/${s.audio}`)).blob();
     const audio = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(blob); });
@@ -234,6 +238,61 @@ $('#expTag').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(tag); $('#expInfo').textContent = current.inRepo ? 'Copied. Works on any normal web page (loads the character from the public repo). Not for Claude artifacts: use the single-file code there.' : 'Copied, but this character is not in the repo yet: add it to characters/ and push first.'; }
   catch { $('#expInfo').textContent = tag; }
 });
+
+// ------------------------------------------------------------------------------------------------ create from photos (automatic)
+const pvAuto = new Preview($('#pvAuto'));
+const A = { photos: [], job: null, timer: null, shown: null };
+const STYLES = { painterly: 'glossy painterly cel-shaded caricature with crisp clean line work, highly detailed', cartoon: 'clean 2D cartoon, bold consistent outlines, flat cel shading with one soft shadow tone' };
+const aShow = (id) => { for (const k of ['aIdle', 'aApprove', 'aWork', 'aDone']) $('#' + k).hidden = k !== id; };
+const shrink = (file) => createImageBitmap(file).then((bmp) => { // keep uploads small: longest side 1536 px, JPEG
+  const k = Math.min(1, 1536 / Math.max(bmp.width, bmp.height)), c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(bmp, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', 0.9); });
+$('#aPhotos').addEventListener('change', async (e) => {
+  A.photos = await Promise.all([...e.target.files].slice(0, 6).map(shrink));
+  $('#aThumbs').replaceChildren(...A.photos.map((src) => h('img', { src })));
+});
+$('#aStart').addEventListener('click', async () => {
+  const name = $('#aName').value.trim();
+  if (!name || !A.photos.length) return ($('#aMsg').textContent = 'Add a name and at least one photo.');
+  const ping = await fetch('/api/ping').then((r) => r.json()).catch(() => null);
+  if (!ping) return ($('#aMsg').textContent = 'This needs the local studio: run `npm run studio` and open the address it prints.');
+  if (!ping.openai) return ($('#aMsg').textContent = 'No OpenAI key found: put OPENAI_API_KEY=... in the .env file in the repo folder and restart the studio.');
+  $('#aMsg').textContent = 'Uploading…';
+  const style = $('#aStyle').value;
+  const r = await fetch('/api/auto/new', { method: 'POST', body: JSON.stringify({ name, photos: A.photos, outfit: $('#aOutfit').value, style: STYLES[style], lipsSet: $('#aLips').value, poses: $('#aPoses').value, mouths: style === 'painterly' ? 'drawn' : 'library' }) });
+  const j = await r.json();
+  if (!r.ok) return ($('#aMsg').textContent = j.error || 'Could not start.');
+  A.job = j.job; A.shown = null; $('#aMsg').textContent = ''; watch();
+});
+$('#aGo').addEventListener('click', async () => { await fetch(`/api/auto/go?job=${A.job}&step=rest`, { method: 'POST' }); A.shown = null; aShow('aWork'); $('#aStep').textContent = 'Starting…'; });
+$('#aRedo').addEventListener('click', async () => { await fetch(`/api/auto/go?job=${A.job}&step=master`, { method: 'POST', body: $('#aNote').value }); A.shown = null; aShow('aWork'); $('#aStep').textContent = 'Drawing again…'; });
+$('#aPublish').addEventListener('click', async () => {
+  const r = await fetch(`/api/auto/publish?job=${A.job}`, { method: 'POST' }), j = await r.json();
+  $('#aResult').append(h('div', { class: 'hint' }, r.ok ? `Added as ${j.file}. It is in the Library tab now; commit and push to share it with the team.` : j.error));
+  if (r.ok) library();
+});
+function watch() {
+  clearInterval(A.timer);
+  aShow('aWork');
+  A.timer = setInterval(async () => {
+    const st = await fetch(`/work/${A.job}/status.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (!st) return;
+    const key = `${st.stage}:${st.masterV || ''}:${st.error || ''}`;
+    $('#aStep').textContent = st.step || 'Working…'; $('#aBar').style.width = `${Math.round((st.progress || 0) * 100)}%`;
+    if (st.check && $('#aCheck').hidden) { $('#aCheck').src = `/work/${A.job}/${st.check}?${st.at}`; $('#aCheck').hidden = false; }
+    if (st.error) { if (A.shown !== key) { A.shown = key; aShow(st.masterReady ? 'aApprove' : 'aIdle'); $('#aMsg').textContent = `Stopped: ${st.error}`; if (!st.masterReady) $('#aIdle').textContent = 'Something went wrong. See the message on the left, then try again.'; } return; }
+    if (st.stage === 'approve' && A.shown !== key) { A.shown = key; $('#aMaster').src = `/work/${A.job}/master.png?${st.masterV}`; aShow('aApprove'); }
+    if (st.stage === 'done' && A.shown !== key) {
+      A.shown = key; clearInterval(A.timer);
+      const url = `/work/${A.job}/${st.char}`;
+      const p = await loadChar(url); pvAuto.set(p); aShow('aDone');
+      $('#aDownload').href = url; $('#aDownload').download = st.char; $('#aSheet').href = `/work/${A.job}/${st.sheet}`;
+      const info = p.info();
+      const sc = st.judge ? ` Judge: ${Object.entries(st.judge.scores).map(([k, v]) => `${k.replace(/_/g, ' ')} ${v}`).join(', ')}.` : '';
+      $('#aResult').textContent = `${info.talkable.length} talking poses, ${info.expressions.length} expressions.${st.silent?.length ? ` Silent (head moved too much to lip-sync): ${st.silent.join(', ')}.` : ''}${sc} Try Talk and Play all movements above.`;
+    }
+  }, 2000);
+}
 
 // ------------------------------------------------------------------------------------------------ create
 const pvCreate = new Preview($('#pvCreate'));
@@ -455,4 +514,4 @@ perf.draw(ctx, t, perf.fit(canvas.width, canvas.height, 'bust'));`;
 }
 
 // scripting / automated tests: window.studio.S is the whole build state
-window.studio = { S, get view() { return view; }, rebuild, align, poseRows, get built() { return built; }, pvCreate, pvLib };
+window.studio = { auto: A, watch, S, get view() { return view; }, rebuild, align, poseRows, get built() { return built; }, pvCreate, pvLib };

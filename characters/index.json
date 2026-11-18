@@ -2,6 +2,61 @@
  "updated": "2026-11-18",
  "characters": [
   {
+   "file": "aditya.char",
+   "id": "aditya",
+   "name": "Aditya",
+   "version": "1.0.0",
+   "description": "Aditya, 10 Minute School teacher (caricature). Big loose curly black hair, dark rectangular glasses, short patchy beard, black crew-neck t-shirt, blue jeans.",
+   "tags": [
+    "teacher",
+    "likeness"
+   ],
+   "lips": "male",
+   "voice": null,
+   "talkable": [
+    "master",
+    "arms-crossed",
+    "clap",
+    "dance-2",
+    "explain",
+    "hands-hips",
+    "happy",
+    "hold-box",
+    "hold-phone",
+    "idle",
+    "jump",
+    "point",
+    "sad",
+    "shrug",
+    "sing-mic",
+    "sit",
+    "surprised",
+    "thumbs-up",
+    "wave",
+    "write-board",
+    "write-notebook"
+   ],
+   "silent": [
+    "dance-1",
+    "pick-up"
+   ],
+   "expressions": [
+    "neutral",
+    "angry",
+    "excited",
+    "happy",
+    "sad",
+    "surprised",
+    "worried"
+   ],
+   "cycles": [
+    "run",
+    "walk"
+   ],
+   "bytes": 9161931,
+   "ok": true
+  },
+  {
    "file": "bhasha.char",
    "id": "bhasha",
    "name": "Bhasha",
@@ -98,10 +153,65 @@
    "ok": true
   },
   {
+   "file": "durjoy.char",
+   "id": "durjoy",
+   "name": "Durjoy",
+   "version": "1.0.0",
+   "description": "Durjoy, 10 Minute School teacher (caricature). Wavy black hair swept up, round black glasses, thin moustache, black 10 Minute School polo, grey trousers.",
+   "tags": [
+    "teacher",
+    "likeness"
+   ],
+   "lips": "male",
+   "voice": null,
+   "talkable": [
+    "master",
+    "arms-crossed",
+    "clap",
+    "dance-2",
+    "explain",
+    "hands-hips",
+    "happy",
+    "hold-box",
+    "hold-phone",
+    "idle",
+    "point",
+    "sad",
+    "sing-mic",
+    "sit",
+    "surprised",
+    "thumbs-up",
+    "wave",
+    "write-board",
+    "write-notebook"
+   ],
+   "silent": [
+    "dance-1",
+    "jump",
+    "pick-up",
+    "shrug"
+   ],
+   "expressions": [
+    "neutral",
+    "angry",
+    "excited",
+    "happy",
+    "sad",
+    "surprised",
+    "worried"
+   ],
+   "cycles": [
+    "run",
+    "walk"
+   ],
+   "bytes": 7946375,
+   "ok": true
+  },
+  {
    "file": "fardin.char",
    "id": "fardin",
    "name": "Fardin",
-   "version": "1.2.0",
+   "version": "1.3.0",
    "description": "Fardin, 10 Minute School teacher (caricature). Maroon punjabi, white pajama, round glasses, full beard.",
    "tags": [
     "teacher",
@@ -149,14 +259,14 @@
     "run",
     "walk"
    ],
-   "bytes": 10123847,
+   "bytes": 9492854,
    "ok": true
   },
   {
    "file": "prapti.char",
    "id": "prapti",
    "name": "Prapti",
-   "version": "1.0.0",
+   "version": "1.1.0",
    "description": "Prapti, 10 Minute School teacher (caricature). Black saree with rust block-print border, black hijab, thin black rectangular spectacles.",
    "tags": [
     "teacher",
@@ -204,14 +314,14 @@
     "run",
     "walk"
    ],
-   "bytes": 12498888,
+   "bytes": 12227885,
    "ok": true
   },
   {
    "file": "rifat.char",
    "id": "rifat",
    "name": "Rifat",
-   "version": "1.2.0",
+   "version": "1.3.0",
    "description": "Rifat, 10 Minute School teacher (caricature). Untucked light-blue shirt, navy trousers, full beard.",
    "tags": [
     "teacher",
@@ -259,7 +369,7 @@
     "run",
     "walk"
    ],
-   "bytes": 9664307,
+   "bytes": 9339630,
    "ok": true
   }
  ]
