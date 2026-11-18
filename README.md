@@ -8,7 +8,7 @@ Comes with **Bhasha, Fardin, Rifat, Prapti, Aditya and Durjoy**, ready to use.
 
 **Live studio (browse, preview, copy the artifact code):** https://dotchar.10mstech.workers.dev
 
-The live site is a static copy. Lip-syncing your own audio and *New character from photos* need the local studio below, because they run ffmpeg, Rhubarb, Python and Chrome. Redeploy after adding characters with `tools/deploy.sh` (needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`).
+The live site is view-and-copy only: browse the characters, preview them, and copy or download their code. Creating characters, opening `.char` files and lip-syncing your own audio are hidden there and appear only in the local studio below (they run ffmpeg, Rhubarb, Python and Chrome). Redeploy after adding characters with `tools/deploy.sh` (needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`).
 
 ## Setup (once)
 

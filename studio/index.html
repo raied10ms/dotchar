@@ -38,6 +38,7 @@
   .chips label { border:1px solid var(--line); border-radius:999px; padding:2px 10px; font-size:12.5px; cursor:pointer; user-select:none; }
   .chips label:has(input:checked) { background:var(--acc2); color:#fff; border-color:var(--acc2); } .chips input { display:none; }
   a.b { text-decoration:none; }
+  body:not(.full) .needs-server { display:none !important; }
   .auto { display:grid; grid-template-columns:minmax(340px, 460px) minmax(360px, 520px); gap:18px; align-items:start; }
   .auto .ctl { grid-template-columns:1.4fr .8fr 1.2fr; } .auto .field { margin:8px 0; } .auto .field > span { display:block; font-size:12px; color:var(--mute); margin-bottom:3px; }
   .thumbs { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; } .thumbs img { width:64px; height:64px; object-fit:cover; border-radius:8px; }
@@ -72,15 +73,15 @@
 <body>
 <header>
   <h1><b>.char</b> studio</h1>
-  <nav><button data-tab="library" class="on">Library</button><button data-tab="create">Create</button><button data-tab="use">Use it</button></nav>
+  <nav><button data-tab="library" class="on">Library</button><button data-tab="create" class="needs-server">Create</button><button data-tab="use">Use it</button></nav>
   <span class="hint" id="srv"></span>
 </header>
 <main>
   <section id="library" class="on">
     <div class="lib">
       <aside class="side">
-        <label class="b" style="width:100%;justify-content:center">Open a .char file…<input type="file" id="openChar" accept=".char,.zip"></label>
-        <div class="hint" style="text-align:center;margin:6px 0 10px">or drop one anywhere</div>
+        <label class="b needs-server" style="width:100%;justify-content:center">Open a .char file…<input type="file" id="openChar" accept=".char,.zip"></label>
+        <div class="hint needs-server" style="text-align:center;margin:6px 0 10px">or drop one anywhere</div>
         <div id="grid"></div>
       </aside>
       <div class="card ctlcol">
@@ -91,7 +92,7 @@
           <div class="field"><span class="hint">Poses to include (fewer = smaller)</span><div id="expPoses" class="chips"></div></div>
           <div class="ctl">
             <div><label>Image size</label><select id="expSize"><option value="384">small (384 px)</option><option value="512" selected>medium (512 px)</option><option value="768">large (768 px)</option></select></div>
-            <div><label>Voice line inside the file</label><select id="expLine"><option value="0">leave out</option><option value="1">include the sample line</option><option value="2">include my last lip-synced audio</option></select></div>
+            <div><label>Voice line inside the file</label><select id="expLine"><option value="0">leave out</option><option value="1">include the sample line</option><option value="2" class="needs-server">include my last lip-synced audio</option></select></div>
           </div>
           <div class="bar"><button class="b p" id="expCopy">Copy code for artifact</button><button class="b" id="expHtml">Download .html</button><span class="hint" id="expSizeInfo"></span></div>
           <p class="hint" style="margin-top:14px"><b>Everything</b> (all poses, full quality) for videos, slides and web pages:</p>
@@ -103,7 +104,7 @@
     </div>
   </section>
 
-  <section id="create">
+  <section id="create" class="needs-server">
     <div class="auto">
       <div class="card">
         <h3 style="margin:0 0 4px">New character from photos</h3>

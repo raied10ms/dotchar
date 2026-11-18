@@ -7,7 +7,9 @@ const $ = (s, el = document) => el.querySelector(s);
 const h = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) k.startsWith('on') ? e.addEventListener(k.slice(2), v) : k === 'class' ? (e.className = v) : e.setAttribute(k, v); e.append(...kids.filter((k) => k != null)); return e; };
 const OPEN = { X: 0, A: 0, B: 0.25, C: 0.6, D: 1, E: 0.6, F: 0.3, G: 0.2, H: 0.45 };
 let server = false;
-fetch('/api/ping').then((r) => { server = r.ok; $('#srv').textContent = r.ok ? 'local server: lip-sync for new audio is on' : ''; }).catch(() => {});
+// Full studio only when the local server answers. A static copy (the hosted site) is view-and-copy only:
+// creating characters, opening files and lip-syncing new audio stay hidden (CSS: body:not(.full) .needs-server).
+fetch('/api/ping').then((r) => { server = r.ok; if (r.ok) document.body.classList.add('full'); $('#srv').textContent = r.ok ? 'local studio: create and lip-sync are on' : 'view and copy'; }).catch(() => { $('#srv').textContent = 'view and copy'; });
 
 // ------------------------------------------------------------------------------------------------ tabs
 document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => {
@@ -38,8 +40,8 @@ class Preview {
       h('div', { class: 'bar' }, h('button', { class: 'b p', onclick: () => this.showcase('all') }, '▶ Play all movements'),
         h('button', { class: 'b', onclick: () => this.showcase('poses') }, 'Poses'), h('button', { class: 'b', onclick: () => this.showcase('exprs') }, 'Expressions'),
         h('button', { class: 'b', onclick: () => this.showcase('cycles') }, 'Walk / run')),
-      h('div', { class: 'ctl' }, lab('Voice line', this.line), lab('STT for new audio', this.stt)),
-      h('div', { class: 'bar' }, h('button', { class: 'b p', onclick: () => this.talk() }, '▶ Talk'), h('label', { class: 'b' }, 'Lip-sync my audio…', this.audioIn)),
+      h('div', { class: 'ctl' }, lab('Voice line', this.line), h('div', { class: 'needs-server' }, h('label', {}, 'STT for new audio'), this.stt)),
+      h('div', { class: 'bar' }, h('button', { class: 'b p', onclick: () => this.talk() }, '▶ Talk'), h('label', { class: 'b needs-server' }, 'Lip-sync my audio…', this.audioIn)),
       this.status);
     for (const c of [this.pose, this.expr, this.gaze, this.fit, this.flip]) c.addEventListener('change', () => this.#perf());
     this.audioIn.addEventListener('change', () => this.ownAudio(this.audioIn.files[0]));
@@ -185,12 +187,12 @@ async function openFile(file) {
   catch (e) { pvLib.say(`Not a valid .char: ${e.message}`); }
 }
 $('#openChar').addEventListener('change', (e) => openFile(e.target.files[0]));
-document.addEventListener('dragover', (e) => { e.preventDefault(); document.body.classList.add('drop'); });
+document.addEventListener('dragover', (e) => { e.preventDefault(); if (server) document.body.classList.add('drop'); });
 document.addEventListener('dragleave', () => document.body.classList.remove('drop'));
 document.addEventListener('drop', (e) => {
   e.preventDefault(); document.body.classList.remove('drop');
   const f = e.dataTransfer.files[0];
-  if (f && /\.(char|zip)$/i.test(f.name)) { document.querySelector('nav button[data-tab=library]').click(); openFile(f); }
+  if (server && f && /\.(char|zip)$/i.test(f.name)) { document.querySelector('nav button[data-tab=library]').click(); openFile(f); }
 });
 library();
 
