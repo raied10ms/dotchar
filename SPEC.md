@@ -60,12 +60,14 @@ Every character has a **canvas**, e.g. 1024×1536. The master pose and every oth
   "face": {
     "mouthAnchor": [501, 406],          // centre of the rest mouth
     "box": [328, 136, 727, 526],        // head region (framing, thumbnails)
-    "cover": { "image": "face/cover.png", "at": [440, 375] },
+    "cover": { "image": "face/cover.png", "at": [440, 375] },   // required unless mouthStyle is "drawn"
     "mouths": {                          // REQUIRED: neutral; usually + happy sad surprised angry worried excited
       "neutral": { "X": { "image": "mouths/neutral/X.png", "at": [459, 389], "size": [84, 31] }, "A": {…}, … "H": {…} }
     },
     "expressions": { "happy": { "mouths": "happy" }, … },   // expression -> which mouth set it talks with
     "mouthSpec": { "lips": "female", "scale": 0.3166, "restWidthPx": 82 },
+    "mouthStyle": "drawn", "mouthStretch": false,   // optional: drawn mouths (each viseme = a soft-edged patch of the
+                                                    // character's own face). No cover; only a "neutral" set; no stretch.
 
     // ONE of the two eye systems:
     "states": {                          // (a) states face: one tile per expression × eye state
@@ -102,7 +104,7 @@ Every character has a **canvas**, e.g. 1024×1536. The master pose and every oth
    1. `cover`
    2. eyes: `states[expr][eyeState]`, falling back to `states[expr].camera` and then to `states.neutral`. On a layers face, draw `eyesBase` → expression eyes (or `blink` + brows when closed) instead.
    3. `visor`, `marks`
-   4. the mouth `mouths[expressions[expr].mouths || expr][viseme]`, falling back to `neutral`. Its height may stretch by ±10% with the lip-sync `open` value.
+   4. the mouth `mouths[expressions[expr].mouths || expr][viseme]`, falling back to `neutral`. Its height may stretch by ±10% with the lip-sync `open` value, unless `mouthStretch` is `false`.
    5. `overMouth` (moustache), if present, so the mouth opens behind it.
 
 A silent pose (`talkable: false`) draws only its image. Use silent poses for beats with no dialogue: crying, laughing, jumping.

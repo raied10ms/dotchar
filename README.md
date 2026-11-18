@@ -2,7 +2,7 @@
 
 One file per character. Any `.char` can talk, change expression and pose, and walk in a **web page, an HTML slide, a rendered video (MP4 or transparent overlay) or a multi-character scene**. You don't rig anything again and you don't generate new images per video.
 
-Comes with **Bhasha, Fardin and Rifat**, ready to use.
+Comes with **Bhasha, Fardin, Rifat and Prapti**, ready to use.
 
 ![Studio library](docs/studio-library.jpg)
 
@@ -76,6 +76,8 @@ Pick one route:
 
 ![Studio create](docs/studio-create.jpg)
 
+**Painterly or realistic face, or a beard or moustache?** Give the character *drawn mouths*: `tools/drawn_mouths.py` + `tools/gen-mouths.mjs` draw the 9 mouth shapes on the character's own face (8 image calls), and `tools/judge.mjs` asks a GPT vision model for a second opinion. The flat library mouths look pasted on such faces.
+
 Read **[docs/METHOD.md](docs/METHOD.md)** first. It has the image rules that make lip-sync look right: front-facing master, lips closed, nothing over the mouth, head locked in every pose. Then check the QA sheet:
 
 ![QA sheet](docs/qa-sheet.jpg)
@@ -100,7 +102,8 @@ runtime/      char.js (load) · puppet.js (draw) · player.js (one take) · char
 lipsync/      audio + words -> viseme track                  cli/         npm run char -- …
 studio/       browser app: library, create, embed snippets   render/      headless pages used by the CLI
 mouthlib/     shared mouths: female/male × 7 moods × 9 visemes
-tools/        setup-rhubarb · gen-images (AI image set) · import_rig.py (legacy rig folders -> .char)
+tools/        setup-rhubarb · gen-images (AI image set) · drawn_mouths + gen-mouths (mouths in the character's own style)
+              judge (GPT vision QA) · facial_hair.py · import_rig.py (legacy rig folders -> .char)
 examples/     web page · slide · scene · from-images (build.json example) · audio samples
 ```
 

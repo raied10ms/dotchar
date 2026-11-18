@@ -19,7 +19,7 @@ ls node_modules/playwright-core || npm install
 ```
 Keys come from env or the repo's `.env`:
 - `DEEPGRAM_API_KEY` or `OPENAI_API_KEY`: speech-to-text. Better mouth shapes.
-- `OPENAI_API_KEY`: image generation.
+- `OPENAI_API_KEY`: image generation and the GPT judge. Models: `CHAR_IMAGE_MODEL`, `CHAR_JUDGE_MODEL`.
 
 Never print the keys. Never commit `.env`.
 
@@ -108,7 +108,7 @@ To measure them, view `master.png`. To check a guess, draw it on a copy:
 ```
 python3 -c "from PIL import Image,ImageDraw as D;im=Image.open('work/<id>/master.png').convert('RGBA');d=D.Draw(im);x,y=496,302;d.line([x-30,y,x+30,y],fill='red',width=2);d.rectangle([380,139,623,245],outline='blue',width=2);im.crop((x-260,y-300,x+260,y+160)).save('/tmp/check.png')"
 ```
-Iterate until the red line sits exactly on the lips and the blue box covers the eyes and brows. **Beard or moustache:** add `"facialHair": true` and `"lipsWidth": <drawn lip width>` to `mouth`, and set `width` to about 0.85 × lipsWidth. In the QA sheet the moustache must stay over every mouth, and the beard under the lip must not be painted over with skin. List poses by file (`"wave": "pose-wave.png"`); auto-align handles the head offsets. Then build:
+Iterate until the red line sits exactly on the lips and the blue box covers the eyes and brows. List poses by file (`"wave": "pose-wave.png"`); auto-align handles the head offsets. Then build:
 ```
 npm run char -- build work/<id> --sheet work/<id>/qa.png
 ```
@@ -120,6 +120,26 @@ npm run char -- build work/<id> --sheet work/<id>/qa.png
   - the jaw stays above the chin.
 
   Adjust `mouth.width`, `mouth.cover` or `lipColour` (hex), or supply a better `mouthless`, then rebuild.
+
+**D2. Choose the mouth type by art style. Decide this before step E.**
+- Flat cel-shaded cartoon → keep the library mouths from step D.
+- Painterly or realistic face, caricature of a real person, or any beard or moustache → **drawn mouths**. Library mouths look pasted on these faces; resizing them or layering the moustache does not fix it.
+
+Drawn mouths (8 image calls; work on the **unpacked** character: `npm run char -- unpack <id>.char work/<id>/char`):
+```
+python3 tools/drawn_mouths.py prep work/<id>/mouths --master work/<id>/master.png --lips x0,y0,x1,y1
+node tools/gen-mouths.mjs work/<id>/mouths --style "the same <painterly/…> style as the supplied image"
+python3 tools/drawn_mouths.py apply work/<id>/mouths work/<id>/char --sheet work/<id>/mouths-qa.png
+node tools/judge.mjs --guide work/<id>/mouths/crop.png --render work/<id>/mouths-qa.png
+npm run char -- pack work/<id>/char -o work/<id>/<id>.char
+```
+- `--lips` is the box of the drawn lips on the master. Use the master the character was built from, the same file as `poses/master`.
+- Look at the sheet yourself, then read the judge's fixes. Re-roll single shapes with `--only D,G --force` (add `--note "…"` for a specific correction) and run `apply` again. Never accept a shape that:
+  - erases or thins facial hair,
+  - looks like shouting, a grin or a kiss,
+  - moves the jaw line.
+- The judge is harsh on purpose and rarely returns PASS. Stop when likeness ≥ 8, rest_pose is 10, facial hair is intact and no shape looks wrong at playback size. Two or three rounds is normal. Report the final scores to the user.
+- Then judge real speech too. Render a line at `--fit face`, make a frame sheet, and pass it as a second `--render`.
 
 People who prefer clicking can do step D in the Studio: `npm run studio` → Create. It saves the same `build.json`.
 
@@ -134,6 +154,7 @@ People who prefer clicking can do step D in the Studio: `npm run studio` → Cre
 
 ## Rules
 
+- Mouth type follows art style (step D2). Painterly, realistic or bearded faces get drawn mouths; never ship a flat library mouth on them.
 - Identity lives in ONE approved image. Every other image is an **edit of the master** on the same canvas. Never redraw the character from scratch.
 - Never use a pose or expression id that `validate` doesn't list. Silent poses have no lip-sync, so never put dialogue on them.
 - One character = one id forever. If the art changes, bump `version` in build.json and rebuild. Don't rename.

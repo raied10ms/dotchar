@@ -101,7 +101,7 @@
    "file": "fardin.char",
    "id": "fardin",
    "name": "Fardin",
-   "version": "1.1.0",
+   "version": "1.2.0",
    "description": "Fardin, 10 Minute School teacher (caricature). Maroon punjabi, white pajama, round glasses, full beard.",
    "tags": [
     "teacher",
@@ -149,14 +149,69 @@
     "run",
     "walk"
    ],
-   "bytes": 9844644,
+   "bytes": 10123847,
+   "ok": true
+  },
+  {
+   "file": "prapti.char",
+   "id": "prapti",
+   "name": "Prapti",
+   "version": "1.0.0",
+   "description": "Prapti, 10 Minute School teacher (caricature). Black saree with rust block-print border, black hijab, thin black rectangular spectacles.",
+   "tags": [
+    "teacher",
+    "likeness"
+   ],
+   "lips": "female",
+   "voice": null,
+   "talkable": [
+    "master",
+    "arms-crossed",
+    "clap",
+    "dance-1",
+    "dance-2",
+    "explain",
+    "hands-hips",
+    "happy",
+    "hold-box",
+    "hold-phone",
+    "idle",
+    "point",
+    "sad",
+    "shrug",
+    "sing-mic",
+    "sit",
+    "surprised",
+    "thumbs-up",
+    "wave",
+    "write-board",
+    "write-notebook"
+   ],
+   "silent": [
+    "jump",
+    "pick-up"
+   ],
+   "expressions": [
+    "neutral",
+    "angry",
+    "excited",
+    "happy",
+    "sad",
+    "surprised",
+    "worried"
+   ],
+   "cycles": [
+    "run",
+    "walk"
+   ],
+   "bytes": 12498888,
    "ok": true
   },
   {
    "file": "rifat.char",
    "id": "rifat",
    "name": "Rifat",
-   "version": "1.1.0",
+   "version": "1.2.0",
    "description": "Rifat, 10 Minute School teacher (caricature). Untucked light-blue shirt, navy trousers, full beard.",
    "tags": [
     "teacher",
@@ -204,7 +259,7 @@
     "run",
     "walk"
    ],
-   "bytes": 9438559,
+   "bytes": 9664307,
    "ok": true
   }
  ]

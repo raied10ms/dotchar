@@ -97,7 +97,7 @@ export class Puppet {
       if (F.marks) put(F.marks); // locked identity marks (bindi, face paint)
       const set = F.mouths[ex?.mouths || st.expr] || F.mouths.neutral;
       const v = set[st.mouth] || set.X;
-      const live = st.mouth === 'X' || st.mouth === 'A' ? 1 : 1 + 0.1 * Math.max(-0.5, Math.min(0.6, (st.open || 0) - 0.4));
+      const live = F.mouthStretch === false || st.mouth === 'X' || st.mouth === 'A' ? 1 : 1 + 0.1 * Math.max(-0.5, Math.min(0.6, (st.open || 0) - 0.4)); // drawn mouths: no stretch
       ctx.drawImage(this.images[v.image], v.at[0], v.at[1], v.size[0], v.size[1] * live);
       put(F.overMouth); // moustache drawn over the mouth: the mouth opens behind it
     }
@@ -126,7 +126,7 @@ export class Puppet {
     if (F.marks) put(F.marks);
     const ms = F.mouths[F.expressions?.[st.expr]?.mouths || st.expr] || F.mouths.neutral;
     const v = ms[st.mouth] || ms.X;
-    const live = st.mouth === 'X' || st.mouth === 'A' ? 1 : 1 + 0.1 * Math.max(-0.5, Math.min(0.6, (st.open || 0) - 0.4));
+    const live = F.mouthStretch === false || st.mouth === 'X' || st.mouth === 'A' ? 1 : 1 + 0.1 * Math.max(-0.5, Math.min(0.6, (st.open || 0) - 0.4));
     ctx.drawImage(this.images[v.image], v.at[0], v.at[1], v.size[0], v.size[1] * live);
     put(F.overMouth);
   }

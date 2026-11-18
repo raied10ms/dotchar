@@ -33,7 +33,7 @@ export function validate(c, has) {
   const exprs = new Set(['neutral']);
   if (!F) W.push('no face: character cannot talk (body-only)');
   else {
-    img(F.cover, 'face.cover');
+    if (F.cover || F.mouthStyle !== 'drawn') img(F.cover, 'face.cover'); // drawn mouths carry their own skin: no cover
     if (!isPt(F.mouthAnchor)) E.push('face.mouthAnchor must be [x, y]');
     if (!F.mouths?.neutral) E.push('face.mouths.neutral is required');
     for (const [e, set] of Object.entries(F.mouths || {})) {
