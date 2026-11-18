@@ -108,7 +108,7 @@ To measure them, view `master.png`. To check a guess, draw it on a copy:
 ```
 python3 -c "from PIL import Image,ImageDraw as D;im=Image.open('work/<id>/master.png').convert('RGBA');d=D.Draw(im);x,y=496,302;d.line([x-30,y,x+30,y],fill='red',width=2);d.rectangle([380,139,623,245],outline='blue',width=2);im.crop((x-260,y-300,x+260,y+160)).save('/tmp/check.png')"
 ```
-Iterate until the red line sits exactly on the lips and the blue box covers the eyes and brows. List poses by file (`"wave": "pose-wave.png"`); auto-align handles the head offsets. Then build:
+Iterate until the red line sits exactly on the lips and the blue box covers the eyes and brows. **Beard or moustache:** add `"facialHair": true` and `"lipsWidth": <drawn lip width>` to `mouth`, and set `width` to about 0.85 × lipsWidth. In the QA sheet the moustache must stay over every mouth, and the beard under the lip must not be painted over with skin. List poses by file (`"wave": "pose-wave.png"`); auto-align handles the head offsets. Then build:
 ```
 npm run char -- build work/<id> --sheet work/<id>/qa.png
 ```

@@ -63,6 +63,7 @@ export function validate(c, has) {
       }
     }
     if (F.marks && F.states) img(F.marks, 'face.marks');
+    if (F.overMouth) img(F.overMouth, 'face.overMouth');
   }
   if (c.thumbnail && !has(c.thumbnail)) W.push(`thumbnail not found: ${c.thumbnail}`);
   const P = Object.entries(poses);

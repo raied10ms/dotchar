@@ -16,7 +16,7 @@ window.run = async () => {
   const m = cfg.mouth || {};
   const S = { lib, master, id: cfg.id, name: cfg.name, lips: cfg.lips || 'female', description: cfg.description, tags: cfg.tags, voice: cfg.voice, license: cfg.license, version: cfg.version,
     mouthless: await img(cfg.mouthless), anchor: m.anchor || null, mouthW: m.width || 80, coverKx: m.cover?.[0] ?? 1.35, coverKy: m.cover?.[1] ?? 0.55,
-    eyeBox: cfg.eyes?.box || null, closed: await img(cfg.eyes?.closed), expr: {}, poses: [], cycles: {} };
+    facialHair: !!m.facialHair, lipsWidth: m.lipsWidth, eyeBox: cfg.eyes?.box || null, closed: await img(cfg.eyes?.closed), expr: {}, poses: [], cycles: {} };
   S.lipColour = !m.lipColour || m.lipColour === 'auto' ? (S.anchor && B.sampleLipColour(master, S.anchor, S.mouthW)) : m.lipColour;
   for (const e of B.EXPRS) if (cfg.eyes?.[e]) S.expr[e] = await img(cfg.eyes[e]);
   const report = { poses: {}, warnings: [], lipColour: S.lipColour };

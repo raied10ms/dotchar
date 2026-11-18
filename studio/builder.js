@@ -151,6 +151,59 @@ export function makeCover(from, isMouthless, [ax, ay], mw, kx = 1.35, ky = 0.55)
   return { canvas: c, at: [x0, y0] };
 }
 
+/**
+ * Moustache / beard: the cover becomes a lips-only ellipse that keeps facial hair above and below the lips, and the
+ * moustache is cut from the master into an `overMouth` layer drawn after the mouth (the mouth opens behind it).
+ * Same method as tools/facial_hair.py. lips = drawn lip box on the master.
+ */
+export function facialHair(master, mouthless, [x0, y0, x1, y1], { gap = 14, pad = 0.06 } = {}) {
+  const w = x1 - x0, h = y1 - y0, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const R = [Math.max(0, Math.floor(x0 - 0.45 * w)), Math.max(0, Math.floor(y0 - 0.65 * w)), Math.min(master.width, Math.ceil(x1 + 0.45 * w)), Math.min(master.height, Math.ceil(y1 + 0.35 * w))];
+  const RW = R[2] - R[0], RH = R[3] - R[1];
+  const M = master.getContext('2d', { willReadFrequently: true }).getImageData(R[0], R[1], RW, RH).data;
+  const L = new Float32Array(RW * RH), C = new Float32Array(RW * RH);
+  for (let i = 0; i < L.length; i++) { const l = toLab(M[i * 4], M[i * 4 + 1], M[i * 4 + 2]); L[i] = l[0]; C[i] = chroma(l); }
+  // skin reference: the more saturated 40% of pixels in a band above the lips
+  const ref = [];
+  for (let y = Math.max(R[1], Math.round(y0 - 0.6 * w)); y < y0; y++) for (let x = Math.round(x0 - 0.3 * w); x < x1 + 0.3 * w; x++) {
+    const i = (y - R[1]) * RW + (x - R[0]); if (i >= 0 && i < L.length && M[i * 4 + 3] > 200) ref.push(i);
+  }
+  const cs = ref.map((i) => C[i]).sort((p, q) => p - q), cut = cs[Math.floor(cs.length * 0.6)] ?? 0;
+  const sk = ref.filter((i) => C[i] > cut), skinL = median(sk.map((i) => L[i])), skinC = median(sk.map((i) => C[i]));
+  const cl = (v) => Math.max(0, Math.min(1, v));
+  const hair = (i) => Math.max(cl((skinL - gap - L[i]) / 12), cl((skinL - 6 - L[i]) / 14) * cl((skinC * 0.75 - C[i]) / 10));
+  // cover: lips ellipse from the mouthless image (or skin blend), minus facial hair just outside the lips
+  const rx = w / 2 + pad * w, ry = h / 2 + pad * w * 0.8;
+  const cx0 = Math.floor(cx - rx - 6), cy0 = Math.floor(cy - ry - 6), cw = Math.ceil(2 * rx + 13), ch = Math.ceil(2 * ry + 13);
+  const cov = canvas(cw, ch), cc = cov.getContext('2d', { willReadFrequently: true });
+  if (mouthless) cc.drawImage(mouthless, cx0, cy0, cw, ch, 0, 0, cw, ch);
+  else { const b = makeCover(master, false, [cx, cy], w, (2 * rx + 13) / w, (2 * ry + 13) / w); cc.drawImage(b.canvas, b.at[0] - cx0, b.at[1] - cy0); }
+  const cd = cc.getImageData(0, 0, cw, ch);
+  for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+    const gx = cx0 + x, gy = cy0 + y, e = ((gx - cx) / rx) ** 2 + ((gy - cy) / ry) ** 2;
+    const inEll = cl((1.08 - e) / 0.16); // soft edge
+    const i = (gy - R[1]) * RW + (gx - R[0]);
+    const keep = (gy < y0 - 2 || gy > y1 + 2) && i >= 0 && i < L.length ? hair(i) : 0;
+    cd.data[(y * cw + x) * 4 + 3] = 255 * inEll * (1 - keep);
+  }
+  cc.putImageData(cd, 0, 0);
+  // overMouth: moustache band above the upper lip + hanging corners
+  const over = canvas(RW, RH), oc = over.getContext('2d'), od = oc.createImageData(RW, RH);
+  let n = 0;
+  for (let y = 0; y < RH; y++) for (let x = 0; x < RW; x++) {
+    const gx = R[0] + x, gy = R[1] + y, i = y * RW + x;
+    const inX = gx >= x0 - 0.35 * w && gx <= x1 + 0.35 * w;
+    const band = inX && gy >= y0 - 0.32 * w && gy <= y0 + 0.2 * h;
+    const corner = inX && (gx < x0 + 0.12 * w || gx > x1 - 0.12 * w) && gy > y0 && gy <= y1;
+    if (!band && !corner) continue;
+    const a = hair(i) * (M[i * 4 + 3] / 255);
+    if (a > 0.02) n++;
+    od.data.set([M[i * 4], M[i * 4 + 1], M[i * 4 + 2], 255 * a], i * 4);
+  }
+  oc.putImageData(od, 0, 0);
+  return { cover: { canvas: cov, at: [cx0, cy0] }, over: n > 20 ? { canvas: over, at: [R[0], R[1]] } : null, skinL };
+}
+
 /** eye tile: crop of an (expression / closed-eyes) image inside the eye box, edges feathered so it blends */
 export function cropTile(img, [x0, y0, x1, y1], feather = 6) {
   const w = Math.round(x1 - x0), h = Math.round(y1 - y0), c = canvas(w, h), ctx = c.getContext('2d');
@@ -249,9 +302,16 @@ export function assemble(st) {
     const hb = headBox(st);
     const mo = buildMouths(st.lib, { lips: st.lips, anchor: st.anchor, width: st.mouthW, lipColour: st.lipColour });
     Object.assign(images, mo.images);
-    const cover = makeCover(st.mouthless || M, !!st.mouthless, st.anchor, st.mouthW, st.coverKx, st.coverKy);
+    let cover, over = null;
+    if (st.facialHair) { // beard / moustache: lips-only cover + moustache drawn over the mouth
+      const [ax, ay] = st.anchor, lw = st.lipsWidth || st.mouthW / 0.85;
+      const fh = facialHair(M, st.mouthless, [ax - lw / 2, ay - 0.13 * lw, ax + lw / 2, ay + 0.13 * lw]);
+      cover = fh.cover; over = fh.over;
+    } else cover = makeCover(st.mouthless || M, !!st.mouthless, st.anchor, st.mouthW, st.coverKx, st.coverKy);
     images['face/cover.png'] = cover.canvas;
+    if (over) images['face/over-mouth.png'] = over.canvas;
     const F = pack.face = { mouthAnchor: st.anchor, box: hb.map(Math.round), cover: { image: 'face/cover.png', at: cover.at }, mouths: mo.mouths,
+      ...(over ? { overMouth: { image: 'face/over-mouth.png', at: over.at } } : {}),
       mouthSpec: { ...mo.spec, faceWidthPx: null }, expressions: Object.fromEntries(EXPRS.map((e) => [e, { mouths: e }])) };
     const eyeImgs = Object.entries(st.expr || {}).filter(([, c]) => c);
     if (st.eyeBox && (st.closed || eyeImgs.length)) {

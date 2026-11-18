@@ -75,6 +75,7 @@ Every character has a **canvas**, e.g. 1024×1536. The master pose and every oth
     },
     // (b) layers face: "eyesBase", "blink", "expressions": { "happy": { "image", "at", "brows": {…}, "blink": {…} } }
     "visor": {…}, "marks": {…},          // optional locked layers (glasses frames, bindi, face paint)
+    "overMouth": { "image": "face/over-mouth.png", "at": [x, y] },   // optional: moustache drawn AFTER the mouth
     "gazeCameraOnly": ["sad"]            // optional: expressions that never glance sideways
   }
 }
@@ -102,6 +103,7 @@ Every character has a **canvas**, e.g. 1024×1536. The master pose and every oth
    2. eyes: `states[expr][eyeState]`, falling back to `states[expr].camera` and then to `states.neutral`. On a layers face, draw `eyesBase` → expression eyes (or `blink` + brows when closed) instead.
    3. `visor`, `marks`
    4. the mouth `mouths[expressions[expr].mouths || expr][viseme]`, falling back to `neutral`. Its height may stretch by ±10% with the lip-sync `open` value.
+   5. `overMouth` (moustache), if present, so the mouth opens behind it.
 
 A silent pose (`talkable: false`) draws only its image. Use silent poses for beats with no dialogue: crying, laughing, jumping.
 
@@ -127,6 +129,7 @@ The studio's **Save build.json** writes this file and `npm run char -- build <fo
   "master": "master.webp",                       // required
   "mouthless": "mouthless.webp",                 // optional: master with the lips painted out (best cover)
   "mouth": { "anchor": [496, 302], "width": 60, "lipColour": "auto", "cover": [1.35, 0.55] },
+  // beard / moustache: "facialHair": true, "lipsWidth": <drawn lip width px> -> lips-only cover + moustache over the mouth
   "eyes": { "box": [380, 139, 623, 245], "closed": "eyes-closed.webp", "happy": "expr-happy.webp", "sad": "…" },
   "poses": { "explain": "pose-explain.webp",
              "wave": { "image": "pose-wave.webp", "talkable": true, "head": [0, 0, 1] } },   // head = [dx, dy, scale]; omit = auto-align

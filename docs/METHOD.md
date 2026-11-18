@@ -44,6 +44,12 @@ Without STT it still works (acoustic only). Without Rhubarb it falls back to tex
 - **Nothing on or touching the mouth**: no hand, hair, scarf or mask. Beards and moustaches are OK if the lips and a thin margin around them stay bare. In that case give the builder a **mouthless** image.
 - Glasses are OK if the lenses are clear and bigger than the eyes.
 
+**Beards and moustaches.** Turn on **Beard or moustache** in the Studio, or set `"facialHair": true` in `build.json`. Two things change:
+- The cover becomes a lips-only patch that keeps the facial hair visible.
+- The moustache is cut from the master into an `overMouth` layer that is drawn *after* the mouth, so the mouth opens behind it the way a real one does.
+
+Nothing below the lips is drawn on top: a dropping jaw carries the lower lip down over the beard. Set the mouth width to about 85% of the drawn lips. For an already-packed character, `tools/facial_hair.py` applies the same fix.
+
 **Every other image is an edit of the master. Never redraw the character from scratch.**
 - Same canvas size, same framing, same character size.
 - **Poses:** the head stays exactly as in the master: same size, angle and position, facing the viewer. Hands never cover the face. Head match ≥ 0.86 = talkable. Lower than that, the pose becomes silent or you nudge it by hand.

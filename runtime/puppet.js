@@ -19,7 +19,7 @@ export function imagePaths(pack) {
   for (const p of Object.values(pack.poses || {})) { want.add(p.image); if (p.tween) want.add(p.tween.image); }
   for (const c of Object.values(pack.cycles || {})) for (const fr of c.frames) want.add(fr.image);
   const ex = f ? Object.values(f.expressions || {}) : [];
-  if (f) for (const t of [f.cover, f.blink, f.eyesBase, f.hairLock, f.visor, f.marks, ...ex, ...ex.flatMap((e) => [e.blink, e.brows, ...Object.values(e.gaze || {})]), ...Object.values(f.gaze || {})]) if (t && t.image) want.add(t.image);
+  if (f) for (const t of [f.cover, f.overMouth, f.blink, f.eyesBase, f.hairLock, f.visor, f.marks, ...ex, ...ex.flatMap((e) => [e.blink, e.brows, ...Object.values(e.gaze || {})]), ...Object.values(f.gaze || {})]) if (t && t.image) want.add(t.image);
   if (f && f.states) for (const set of Object.values(f.states)) for (const t of Object.values(set)) want.add(t.image);
   if (f) for (const set of Object.values(f.mouths || {})) for (const m of Object.values(set)) want.add(m.image);
   want.delete(undefined);
@@ -99,6 +99,7 @@ export class Puppet {
       const v = set[st.mouth] || set.X;
       const live = st.mouth === 'X' || st.mouth === 'A' ? 1 : 1 + 0.1 * Math.max(-0.5, Math.min(0.6, (st.open || 0) - 0.4));
       ctx.drawImage(this.images[v.image], v.at[0], v.at[1], v.size[0], v.size[1] * live);
+      put(F.overMouth); // moustache drawn over the mouth: the mouth opens behind it
     }
     ctx.restore();
   }
@@ -127,5 +128,6 @@ export class Puppet {
     const v = ms[st.mouth] || ms.X;
     const live = st.mouth === 'X' || st.mouth === 'A' ? 1 : 1 + 0.1 * Math.max(-0.5, Math.min(0.6, (st.open || 0) - 0.4));
     ctx.drawImage(this.images[v.image], v.at[0], v.at[1], v.size[0], v.size[1] * live);
+    put(F.overMouth);
   }
 }

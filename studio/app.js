@@ -221,6 +221,7 @@ const bind = (id, key, fmt = (v) => v, out) => { const el = $(id); const upd = (
 bind('#mw', 'mouthW', (v) => v, '#mwV'); bind('#coverKx', 'coverKx', (v) => v.toFixed(2), '#cxV'); bind('#coverKy', 'coverKy', (v) => v.toFixed(2), '#cyV');
 $('#lipC').addEventListener('input', (e) => { S.lipColour = e.target.value; S.lipAuto = false; rebuild(); });
 $('#lipAuto').addEventListener('click', () => { if (!S.anchor) return; const c = B.sampleLipColour(S.master, S.anchor, S.mouthW); if (c) { $('#lipC').value = S.lipColour = c; S.lipAuto = true; rebuild(); } else pvCreate.say('No clear lip colour found there; pick one.'); });
+$('#beard').addEventListener('change', (e) => { S.facialHair = e.target.checked; rebuild(); });
 $('#cLips').addEventListener('change', (e) => { S.lips = e.target.value; rebuild(); });
 $('#cName').addEventListener('input', (e) => { S.name = e.target.value; S.id = slug(e.target.value); updateExport(); });
 
@@ -328,7 +329,7 @@ $('#saveBuild').addEventListener('click', () => {
   if (!S.master) return;
   const j = { name: S.name, id: S.id, lips: S.lips, description: $('#cDesc').value, master: S.files.master };
   if (S.files.mouthless) j.mouthless = S.files.mouthless;
-  if (S.anchor) j.mouth = { anchor: S.anchor, width: S.mouthW, lipColour: S.lipAuto ? 'auto' : S.lipColour, cover: [S.coverKx, S.coverKy] };
+  if (S.anchor) j.mouth = { anchor: S.anchor, width: S.mouthW, lipColour: S.lipAuto ? 'auto' : S.lipColour, cover: [S.coverKx, S.coverKy], ...(S.facialHair ? { facialHair: true } : {}) };
   if (S.eyeBox) j.eyes = { box: S.eyeBox, ...S.files.eyes };
   j.poses = Object.fromEntries(S.poses.map((p) => [p.id, { image: p.file, talkable: p.talkable, head: [p.dx, p.dy, +p.s.toFixed(4)] }]));
   if (Object.keys(S.files.cycles).length) j.cycles = S.files.cycles;
