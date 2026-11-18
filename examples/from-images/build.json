@@ -1,0 +1,19 @@
+{
+ "name": "Mother",
+ "lips": "female",
+ "description": "Example: a supporting character built from 8 images with `npm run char -- build examples/from-images`",
+ "master": "master.webp",
+ "mouthless": "mouthless.webp",
+ "mouth": { "anchor": [496, 302], "width": 60, "lipColour": "auto", "cover": [1.35, 0.55] },
+ "eyes": {
+  "box": [380, 139, 623, 245],
+  "closed": "eyes-closed.webp",
+  "happy": "expr-happy.webp",
+  "sad": "expr-sad.webp",
+  "surprised": "expr-surprised.webp"
+ },
+ "poses": {
+  "explain": "pose-explain.webp",
+  "wave": { "image": "pose-wave.webp" }
+ }
+}

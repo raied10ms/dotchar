@@ -1,0 +1,924 @@
+{
+ "female": {
+  "angry": {
+   "X": {
+    "image": "female/angry/X.png",
+    "size": [
+     266,
+     67
+    ]
+   },
+   "A": {
+    "image": "female/angry/A.png",
+    "size": [
+     264,
+     62
+    ]
+   },
+   "B": {
+    "image": "female/angry/B.png",
+    "size": [
+     266,
+     92
+    ]
+   },
+   "C": {
+    "image": "female/angry/C.png",
+    "size": [
+     273,
+     119
+    ]
+   },
+   "D": {
+    "image": "female/angry/D.png",
+    "size": [
+     271,
+     140
+    ]
+   },
+   "E": {
+    "image": "female/angry/E.png",
+    "size": [
+     232,
+     122
+    ]
+   },
+   "F": {
+    "image": "female/angry/F.png",
+    "size": [
+     196,
+     74
+    ]
+   },
+   "G": {
+    "image": "female/angry/G.png",
+    "size": [
+     266,
+     101
+    ]
+   },
+   "H": {
+    "image": "female/angry/H.png",
+    "size": [
+     259,
+     112
+    ]
+   }
+  },
+  "excited": {
+   "X": {
+    "image": "female/excited/X.png",
+    "size": [
+     324,
+     105
+    ]
+   },
+   "A": {
+    "image": "female/excited/A.png",
+    "size": [
+     308,
+     100
+    ]
+   },
+   "B": {
+    "image": "female/excited/B.png",
+    "size": [
+     324,
+     118
+    ]
+   },
+   "C": {
+    "image": "female/excited/C.png",
+    "size": [
+     321,
+     164
+    ]
+   },
+   "D": {
+    "image": "female/excited/D.png",
+    "size": [
+     313,
+     209
+    ]
+   },
+   "E": {
+    "image": "female/excited/E.png",
+    "size": [
+     260,
+     194
+    ]
+   },
+   "F": {
+    "image": "female/excited/F.png",
+    "size": [
+     198,
+     140
+    ]
+   },
+   "G": {
+    "image": "female/excited/G.png",
+    "size": [
+     341,
+     116
+    ]
+   },
+   "H": {
+    "image": "female/excited/H.png",
+    "size": [
+     318,
+     140
+    ]
+   }
+  },
+  "happy": {
+   "X": {
+    "image": "female/happy/X.png",
+    "size": [
+     316,
+     96
+    ]
+   },
+   "A": {
+    "image": "female/happy/A.png",
+    "size": [
+     304,
+     90
+    ]
+   },
+   "B": {
+    "image": "female/happy/B.png",
+    "size": [
+     314,
+     107
+    ]
+   },
+   "C": {
+    "image": "female/happy/C.png",
+    "size": [
+     309,
+     137
+    ]
+   },
+   "D": {
+    "image": "female/happy/D.png",
+    "size": [
+     301,
+     178
+    ]
+   },
+   "E": {
+    "image": "female/happy/E.png",
+    "size": [
+     256,
+     163
+    ]
+   },
+   "F": {
+    "image": "female/happy/F.png",
+    "size": [
+     221,
+     126
+    ]
+   },
+   "G": {
+    "image": "female/happy/G.png",
+    "size": [
+     323,
+     104
+    ]
+   },
+   "H": {
+    "image": "female/happy/H.png",
+    "size": [
+     297,
+     131
+    ]
+   }
+  },
+  "neutral": {
+   "X": {
+    "image": "female/neutral/X.png",
+    "size": [
+     259,
+     78
+    ]
+   },
+   "A": {
+    "image": "female/neutral/A.png",
+    "size": [
+     249,
+     70
+    ]
+   },
+   "B": {
+    "image": "female/neutral/B.png",
+    "size": [
+     271,
+     93
+    ]
+   },
+   "C": {
+    "image": "female/neutral/C.png",
+    "size": [
+     257,
+     136
+    ]
+   },
+   "D": {
+    "image": "female/neutral/D.png",
+    "size": [
+     245,
+     192
+    ]
+   },
+   "E": {
+    "image": "female/neutral/E.png",
+    "size": [
+     162,
+     168
+    ]
+   },
+   "F": {
+    "image": "female/neutral/F.png",
+    "size": [
+     148,
+     123
+    ]
+   },
+   "G": {
+    "image": "female/neutral/G.png",
+    "size": [
+     262,
+     93
+    ]
+   },
+   "H": {
+    "image": "female/neutral/H.png",
+    "size": [
+     248,
+     120
+    ]
+   }
+  },
+  "sad": {
+   "X": {
+    "image": "female/sad/X.png",
+    "size": [
+     238,
+     84
+    ]
+   },
+   "A": {
+    "image": "female/sad/A.png",
+    "size": [
+     238,
+     83
+    ]
+   },
+   "B": {
+    "image": "female/sad/B.png",
+    "size": [
+     245,
+     95
+    ]
+   },
+   "C": {
+    "image": "female/sad/C.png",
+    "size": [
+     241,
+     144
+    ]
+   },
+   "D": {
+    "image": "female/sad/D.png",
+    "size": [
+     242,
+     175
+    ]
+   },
+   "E": {
+    "image": "female/sad/E.png",
+    "size": [
+     183,
+     150
+    ]
+   },
+   "F": {
+    "image": "female/sad/F.png",
+    "size": [
+     149,
+     118
+    ]
+   },
+   "G": {
+    "image": "female/sad/G.png",
+    "size": [
+     240,
+     101
+    ]
+   },
+   "H": {
+    "image": "female/sad/H.png",
+    "size": [
+     232,
+     123
+    ]
+   }
+  },
+  "surprised": {
+   "X": {
+    "image": "female/surprised/X.png",
+    "size": [
+     149,
+     126
+    ]
+   },
+   "A": {
+    "image": "female/surprised/A.png",
+    "size": [
+     169,
+     79
+    ]
+   },
+   "B": {
+    "image": "female/surprised/B.png",
+    "size": [
+     187,
+     105
+    ]
+   },
+   "C": {
+    "image": "female/surprised/C.png",
+    "size": [
+     168,
+     178
+    ]
+   },
+   "D": {
+    "image": "female/surprised/D.png",
+    "size": [
+     189,
+     229
+    ]
+   },
+   "E": {
+    "image": "female/surprised/E.png",
+    "size": [
+     138,
+     172
+    ]
+   },
+   "F": {
+    "image": "female/surprised/F.png",
+    "size": [
+     118,
+     111
+    ]
+   },
+   "G": {
+    "image": "female/surprised/G.png",
+    "size": [
+     168,
+     112
+    ]
+   },
+   "H": {
+    "image": "female/surprised/H.png",
+    "size": [
+     157,
+     128
+    ]
+   }
+  },
+  "worried": {
+   "X": {
+    "image": "female/worried/X.png",
+    "size": [
+     253,
+     82
+    ]
+   },
+   "A": {
+    "image": "female/worried/A.png",
+    "size": [
+     259,
+     80
+    ]
+   },
+   "B": {
+    "image": "female/worried/B.png",
+    "size": [
+     255,
+     97
+    ]
+   },
+   "C": {
+    "image": "female/worried/C.png",
+    "size": [
+     249,
+     135
+    ]
+   },
+   "D": {
+    "image": "female/worried/D.png",
+    "size": [
+     249,
+     177
+    ]
+   },
+   "E": {
+    "image": "female/worried/E.png",
+    "size": [
+     183,
+     145
+    ]
+   },
+   "F": {
+    "image": "female/worried/F.png",
+    "size": [
+     147,
+     106
+    ]
+   },
+   "G": {
+    "image": "female/worried/G.png",
+    "size": [
+     253,
+     103
+    ]
+   },
+   "H": {
+    "image": "female/worried/H.png",
+    "size": [
+     252,
+     127
+    ]
+   }
+  },
+  "_rest": [
+   259,
+   78
+  ]
+ },
+ "male": {
+  "angry": {
+   "X": {
+    "image": "male/angry/X.png",
+    "size": [
+     251,
+     41
+    ]
+   },
+   "A": {
+    "image": "male/angry/A.png",
+    "size": [
+     244,
+     42
+    ]
+   },
+   "B": {
+    "image": "male/angry/B.png",
+    "size": [
+     258,
+     78
+    ]
+   },
+   "C": {
+    "image": "male/angry/C.png",
+    "size": [
+     216,
+     96
+    ]
+   },
+   "D": {
+    "image": "male/angry/D.png",
+    "size": [
+     243,
+     134
+    ]
+   },
+   "E": {
+    "image": "male/angry/E.png",
+    "size": [
+     167,
+     113
+    ]
+   },
+   "F": {
+    "image": "male/angry/F.png",
+    "size": [
+     127,
+     108
+    ]
+   },
+   "G": {
+    "image": "male/angry/G.png",
+    "size": [
+     240,
+     67
+    ]
+   },
+   "H": {
+    "image": "male/angry/H.png",
+    "size": [
+     238,
+     84
+    ]
+   }
+  },
+  "excited": {
+   "X": {
+    "image": "male/excited/X.png",
+    "size": [
+     312,
+     85
+    ]
+   },
+   "A": {
+    "image": "male/excited/A.png",
+    "size": [
+     310,
+     83
+    ]
+   },
+   "B": {
+    "image": "male/excited/B.png",
+    "size": [
+     310,
+     110
+    ]
+   },
+   "C": {
+    "image": "male/excited/C.png",
+    "size": [
+     298,
+     141
+    ]
+   },
+   "D": {
+    "image": "male/excited/D.png",
+    "size": [
+     293,
+     178
+    ]
+   },
+   "E": {
+    "image": "male/excited/E.png",
+    "size": [
+     203,
+     181
+    ]
+   },
+   "F": {
+    "image": "male/excited/F.png",
+    "size": [
+     144,
+     157
+    ]
+   },
+   "G": {
+    "image": "male/excited/G.png",
+    "size": [
+     319,
+     117
+    ]
+   },
+   "H": {
+    "image": "male/excited/H.png",
+    "size": [
+     310,
+     131
+    ]
+   }
+  },
+  "happy": {
+   "X": {
+    "image": "male/happy/X.png",
+    "size": [
+     286,
+     71
+    ]
+   },
+   "A": {
+    "image": "male/happy/A.png",
+    "size": [
+     293,
+     71
+    ]
+   },
+   "B": {
+    "image": "male/happy/B.png",
+    "size": [
+     284,
+     92
+    ]
+   },
+   "C": {
+    "image": "male/happy/C.png",
+    "size": [
+     281,
+     118
+    ]
+   },
+   "D": {
+    "image": "male/happy/D.png",
+    "size": [
+     291,
+     164
+    ]
+   },
+   "E": {
+    "image": "male/happy/E.png",
+    "size": [
+     253,
+     141
+    ]
+   },
+   "F": {
+    "image": "male/happy/F.png",
+    "size": [
+     163,
+     123
+    ]
+   },
+   "G": {
+    "image": "male/happy/G.png",
+    "size": [
+     287,
+     85
+    ]
+   },
+   "H": {
+    "image": "male/happy/H.png",
+    "size": [
+     280,
+     109
+    ]
+   }
+  },
+  "neutral": {
+   "X": {
+    "image": "male/neutral/X.png",
+    "size": [
+     230,
+     49
+    ]
+   },
+   "A": {
+    "image": "male/neutral/A.png",
+    "size": [
+     231,
+     38
+    ]
+   },
+   "B": {
+    "image": "male/neutral/B.png",
+    "size": [
+     228,
+     64
+    ]
+   },
+   "C": {
+    "image": "male/neutral/C.png",
+    "size": [
+     199,
+     104
+    ]
+   },
+   "D": {
+    "image": "male/neutral/D.png",
+    "size": [
+     214,
+     165
+    ]
+   },
+   "E": {
+    "image": "male/neutral/E.png",
+    "size": [
+     135,
+     145
+    ]
+   },
+   "F": {
+    "image": "male/neutral/F.png",
+    "size": [
+     98,
+     110
+    ]
+   },
+   "G": {
+    "image": "male/neutral/G.png",
+    "size": [
+     230,
+     66
+    ]
+   },
+   "H": {
+    "image": "male/neutral/H.png",
+    "size": [
+     206,
+     89
+    ]
+   }
+  },
+  "sad": {
+   "X": {
+    "image": "male/sad/X.png",
+    "size": [
+     232,
+     56
+    ]
+   },
+   "A": {
+    "image": "male/sad/A.png",
+    "size": [
+     223,
+     54
+    ]
+   },
+   "B": {
+    "image": "male/sad/B.png",
+    "size": [
+     220,
+     64
+    ]
+   },
+   "C": {
+    "image": "male/sad/C.png",
+    "size": [
+     215,
+     110
+    ]
+   },
+   "D": {
+    "image": "male/sad/D.png",
+    "size": [
+     219,
+     155
+    ]
+   },
+   "E": {
+    "image": "male/sad/E.png",
+    "size": [
+     156,
+     130
+    ]
+   },
+   "F": {
+    "image": "male/sad/F.png",
+    "size": [
+     114,
+     113
+    ]
+   },
+   "G": {
+    "image": "male/sad/G.png",
+    "size": [
+     218,
+     68
+    ]
+   },
+   "H": {
+    "image": "male/sad/H.png",
+    "size": [
+     211,
+     94
+    ]
+   }
+  },
+  "surprised": {
+   "X": {
+    "image": "male/surprised/X.png",
+    "size": [
+     110,
+     127
+    ]
+   },
+   "A": {
+    "image": "male/surprised/A.png",
+    "size": [
+     172,
+     73
+    ]
+   },
+   "B": {
+    "image": "male/surprised/B.png",
+    "size": [
+     167,
+     94
+    ]
+   },
+   "C": {
+    "image": "male/surprised/C.png",
+    "size": [
+     124,
+     155
+    ]
+   },
+   "D": {
+    "image": "male/surprised/D.png",
+    "size": [
+     155,
+     192
+    ]
+   },
+   "E": {
+    "image": "male/surprised/E.png",
+    "size": [
+     117,
+     147
+    ]
+   },
+   "F": {
+    "image": "male/surprised/F.png",
+    "size": [
+     83,
+     101
+    ]
+   },
+   "G": {
+    "image": "male/surprised/G.png",
+    "size": [
+     162,
+     88
+    ]
+   },
+   "H": {
+    "image": "male/surprised/H.png",
+    "size": [
+     133,
+     116
+    ]
+   }
+  },
+  "worried": {
+   "X": {
+    "image": "male/worried/X.png",
+    "size": [
+     227,
+     64
+    ]
+   },
+   "A": {
+    "image": "male/worried/A.png",
+    "size": [
+     236,
+     62
+    ]
+   },
+   "B": {
+    "image": "male/worried/B.png",
+    "size": [
+     221,
+     78
+    ]
+   },
+   "C": {
+    "image": "male/worried/C.png",
+    "size": [
+     209,
+     108
+    ]
+   },
+   "D": {
+    "image": "male/worried/D.png",
+    "size": [
+     230,
+     145
+    ]
+   },
+   "E": {
+    "image": "male/worried/E.png",
+    "size": [
+     152,
+     131
+    ]
+   },
+   "F": {
+    "image": "male/worried/F.png",
+    "size": [
+     125,
+     114
+    ]
+   },
+   "G": {
+    "image": "male/worried/G.png",
+    "size": [
+     226,
+     74
+    ]
+   },
+   "H": {
+    "image": "male/worried/H.png",
+    "size": [
+     211,
+     98
+    ]
+   }
+  },
+  "_rest": [
+   230,
+   49
+  ]
+ }
+}

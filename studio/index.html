@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>.char studio</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --bg:#f6f4ef; --panel:#fff; --ink:#1d1b18; --mute:#6f6a62; --line:#e4dfd5; --acc:#d9480f; --acc2:#1864ab; --ok:#2b8a3e; --warn:#e67700; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color:var(--ink); background:var(--bg); }
+  header { display:flex; align-items:center; gap:24px; padding:12px 20px; border-bottom:1px solid var(--line); background:var(--panel); position:sticky; top:0; z-index:5; }
+  header h1 { font-size:17px; margin:0; letter-spacing:.2px; } header h1 b { color:var(--acc); }
+  nav button { background:none; border:0; padding:8px 12px; font:inherit; color:var(--mute); cursor:pointer; border-radius:6px; }
+  nav button.on { color:var(--ink); background:var(--bg); font-weight:600; }
+  .hint { color:var(--mute); font-size:12.5px; }
+  main > section { display:none; padding:18px 20px; } main > section.on { display:block; }
+  .row { display:flex; gap:18px; align-items:flex-start; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  button.b, label.b { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:var(--panel); padding:6px 11px; border-radius:7px; font:inherit; cursor:pointer; color:var(--ink); }
+  button.b:hover, label.b:hover { border-color:#c9c1b2; }
+  button.p { background:var(--acc); color:#fff; border-color:var(--acc); }
+  button.b:disabled { opacity:.45; cursor:default; }
+  input[type=text], select, textarea { font:inherit; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:#fff; width:100%; }
+  input[type=range] { width:100%; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; }
+  .char { cursor:pointer; text-align:center; padding:10px; } .char.sel { outline:2px solid var(--acc); }
+  .char img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; background:#f0ece4; }
+  .char b { display:block; margin-top:6px; } .char span { font-size:12px; color:var(--mute); }
+  .preview { width:440px; flex:none; position:sticky; top:70px; }
+  .preview canvas { width:100%; aspect-ratio:3/4; background:repeating-conic-gradient(#efebe3 0 25%, #f8f6f1 0 50%) 0 0/20px 20px; border-radius:8px; display:block; }
+  .ctl { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; } .ctl label { font-size:12px; color:var(--mute); }
+  .bar { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; align-items:center; }
+  .status { font-size:12.5px; color:var(--mute); margin-top:8px; min-height:18px; }
+  .steps { width:360px; flex:none; display:flex; flex-direction:column; gap:12px; }
+  .steps h3 { margin:0 0 6px; font-size:14px; } .steps h3 i { font-style:normal; color:var(--acc); margin-right:6px; }
+  .steps .field { margin:6px 0; } .steps .field > span { display:block; font-size:12px; color:var(--mute); margin-bottom:2px; }
+  .setup { flex:1; min-width:300px; }
+  .setup canvas { width:100%; background:repeating-conic-gradient(#efebe3 0 25%, #f8f6f1 0 50%) 0 0/20px 20px; border-radius:8px; display:block; cursor:crosshair; }
+  .mode button.on { background:var(--acc2); color:#fff; border-color:var(--acc2); }
+  .slots { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+  .slot { border:1px dashed #cfc7b8; border-radius:7px; padding:6px; text-align:center; font-size:12px; cursor:pointer; position:relative; min-height:58px; }
+  .slot img { width:100%; height:44px; object-fit:contain; } .slot.has { border-style:solid; border-color:var(--ok); }
+  .pose { display:grid; grid-template-columns:48px 1fr; gap:8px; padding:8px 0; border-top:1px solid var(--line); }
+  .pose img { width:48px; height:64px; object-fit:contain; background:#f0ece4; border-radius:5px; }
+  .pose .nudge button { padding:2px 7px; }
+  .score { font-size:12px; font-weight:600; } .score.good { color:var(--ok); } .score.bad { color:var(--warn); }
+  pre { background:#1d1b18; color:#f1ece2; padding:12px 14px; border-radius:8px; overflow:auto; font-size:12.5px; }
+  .warn { color:var(--warn); font-size:12.5px; } .drop { outline:2px dashed var(--acc2); outline-offset:4px; }
+  input[type=file] { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1><b>.char</b> studio</h1>
+  <nav><button data-tab="library" class="on">Library</button><button data-tab="create">Create</button><button data-tab="use">Use it</button></nav>
+  <span class="hint" id="srv"></span>
+</header>
+<main>
+  <section id="library" class="on">
+    <div class="row">
+      <div style="flex:1">
+        <div class="bar" style="margin:0 0 14px">
+          <label class="b">Open a .char file…<input type="file" id="openChar" accept=".char,.zip"></label>
+          <span class="hint">or drop one anywhere on this page</span>
+        </div>
+        <div class="grid" id="grid"></div>
+        <p class="hint" style="margin-top:18px">Characters live in <code>characters/*.char</code> in the repo. Add yours with <code>npm run char -- list</code> after copying the file in.</p>
+      </div>
+      <div class="preview card" id="pvLib"></div>
+    </div>
+  </section>
+
+  <section id="create">
+    <div class="row">
+      <div class="steps">
+        <div class="card">
+          <h3><i>1</i>Who</h3>
+          <div class="field"><span>Name</span><input type="text" id="cName" placeholder="e.g. Tuhin"></div>
+          <div class="field"><span>Lips (shared mouth library)</span><select id="cLips"><option value="female">female: soft, fuller lips</option><option value="male">male: thinner, flatter lips</option></select></div>
+          <div class="field"><span>Description (optional)</span><input type="text" id="cDesc" placeholder="who they are, outfit"></div>
+        </div>
+        <div class="card">
+          <h3><i>2</i>Master image <span class="hint">(required)</span></h3>
+          <p class="hint">Front-facing, transparent PNG, lips gently closed, nothing over the mouth. Every other image must use the same canvas and framing.</p>
+          <label class="b">Choose master…<input type="file" id="fMaster" accept="image/*"></label>
+          <div class="warn" id="masterWarn"></div>
+        </div>
+        <div class="card">
+          <h3><i>3</i>Mouth</h3>
+          <p class="hint">Pick <b>Mouth</b> mode and click the centre of the lips. Then set the width so the rest mouth matches the drawn one (about a third of the face width).</p>
+          <div class="field"><span>Mouth width <b id="mwV"></b> px</span><input type="range" id="mw" min="20" max="400" value="90"></div>
+          <div class="field"><span>Lip colour</span><div class="bar" style="margin:0"><input type="color" id="lipC" value="#c4574f" style="width:60px;height:30px;padding:0"><button class="b" id="lipAuto">Sample from image</button></div></div>
+          <div class="field"><span>Cover width × <b id="cxV"></b></span><input type="range" id="coverKx" min="1" max="2.2" step="0.05" value="1.35"></div>
+          <div class="field"><span>Cover height × <b id="cyV"></b></span><input type="range" id="coverKy" min="0.3" max="1.2" step="0.05" value="0.55"></div>
+          <p class="hint">The cover hides the mouth drawn on the body images. Best: upload the master with the lips painted out (needed for beards and textured skin).</p>
+          <label class="b">Mouthless master (optional)…<input type="file" id="fMouthless" accept="image/*"></label> <span class="hint" id="mlName"></span>
+        </div>
+        <div class="card">
+          <h3><i>4</i>Eyes <span class="hint">(optional: blinks + expressions)</span></h3>
+          <p class="hint">Pick <b>Eyes</b> mode and drag a box around both eyes and brows. Upload copies of the master that change only the eyes.</p>
+          <div class="slots" id="eyeSlots"></div>
+        </div>
+        <div class="card">
+          <h3><i>5</i>Poses <span class="hint">(optional)</span></h3>
+          <p class="hint">Same character, head unchanged and front-on, body in a new pose. Each pose is auto-aligned to the master's head; aim for a match ≥ 0.86.</p>
+          <label class="b">Add pose images…<input type="file" id="fPoses" accept="image/*" multiple></label>
+          <div id="poseList"></div>
+        </div>
+        <div class="card">
+          <h3><i>6</i>Walk / run <span class="hint">(optional)</span></h3>
+          <p class="hint">Side-view frames facing right, in order (or one sheet with the frames side by side).</p>
+          <div class="bar" style="margin:0"><label class="b">Walk frames…<input type="file" id="fWalk" accept="image/*" multiple></label><label class="b">Run frames…<input type="file" id="fRun" accept="image/*" multiple></label></div>
+          <div class="hint" id="cycInfo"></div>
+        </div>
+        <div class="card">
+          <h3><i>7</i>Export</h3>
+          <button class="b p" id="export" disabled>Download .char</button> <button class="b" id="saveBuild">Save build.json</button>
+          <div class="status" id="exportInfo"></div>
+        </div>
+      </div>
+      <div class="setup card">
+        <div class="bar mode" style="margin:0 0 10px"><button class="b on" data-mode="mouth">Mouth</button><button class="b" data-mode="eyes">Eyes</button>
+          <button class="b" id="zoomFace">Zoom to face</button><button class="b" id="zoomAll">Whole body</button><span class="hint" id="setupHint">Load a master image to start.</span></div>
+        <canvas id="setup" width="600" height="800"></canvas>
+      </div>
+      <div class="preview card" id="pvCreate"></div>
+    </div>
+  </section>
+
+  <section id="use">
+    <div class="card" style="max-width:900px">
+      <h3 style="margin-top:0">Use <span id="useName">a character</span> anywhere</h3>
+      <p><b>Web page or HTML slide</b>: one script tag, one element.</p>
+      <pre id="snipWeb"></pre>
+      <p><b>Video</b> (MP4, or transparent WebM/MOV to overlay in Premiere / CapCut / After Effects):</p>
+      <pre id="snipCli"></pre>
+      <p><b>Your own canvas / Remotion</b>:</p>
+      <pre id="snipJs"></pre>
+      <p class="hint">Full format: SPEC.md. Lip-sync any audio: <code>npm run char -- lipsync line.mp3 --stt deepgram</code>.</p>
+    </div>
+  </section>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

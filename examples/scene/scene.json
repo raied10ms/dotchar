@@ -1,0 +1,28 @@
+{
+ "title": "Three characters, one conversation (writers edit this JSON; no code)",
+ "size": [1920, 1080],
+ "fps": 30,
+ "background": "#f4efe6",
+ "start": 0.6,
+ "cast": {
+  "bhasha": { "char": "../../characters/bhasha.char", "x": 520, "y": 1040, "height": 640, "face": "R" },
+  "fardin": { "char": "../../characters/fardin.char", "x": 1080, "y": 1040, "height": 860, "face": "L" },
+  "rifat":  { "char": "../../characters/rifat.char", "x": 1560, "y": 1040, "height": 860, "face": "L" }
+ },
+ "lines": {
+  "b1": { "audio": "../audio/bhasha-hello.mp3", "track": "../audio/bhasha-hello.lipsync.json" },
+  "f1": { "audio": "../audio/fardin-hello.mp3", "track": "../audio/fardin-hello.lipsync.json" }
+ },
+ "timeline": [
+  { "who": "bhasha", "say": "b1" },
+  { "who": "bhasha", "on": "b1", "pose": "greet" },
+  { "who": "bhasha", "on": "b1", "expression": "happy" },
+  { "who": "fardin", "say": "f1", "gap": 0.4 },
+  { "who": "fardin", "on": "f1", "pose": "explain" },
+  { "who": "fardin", "on": "f1", "expression": "surprised" },
+  { "who": "rifat", "on": "f1", "offset": 0.6, "pose": "thumbs-up", "dur": 2.2 },
+  { "who": "rifat", "on": "f1", "expression": "happy" },
+  { "at": 0, "camera": { "zoom": 1, "cut": true } }
+ ],
+ "duration": 10.5
+}

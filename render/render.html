@@ -1,0 +1,35 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:transparent">
+<canvas id="c"></canvas>
+<script type="module">
+// Headless render target for `char render` (cli/char.mjs). Same runtime as pages, slides and the studio.
+import { loadChar } from '../runtime/char.js';
+import { Performance } from '../runtime/player.js';
+import { loadScene } from '../runtime/scene.js';
+const job = await (await fetch(new URLSearchParams(location.search).get('job'))).json();
+const c = document.getElementById('c'), ctx = c.getContext('2d');
+const img = (src) => new Promise((ok, err) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => err(new Error('missing ' + src)); i.src = src; });
+const fmt = job.transparent ? 'image/png' : 'image/jpeg';
+try {
+  if (job.scene) {
+    const scene = await loadScene(job.scene);
+    [c.width, c.height] = scene.size;
+    window.info = { duration: scene.duration, fps: scene.fps || 30, says: scene.says.map((s) => ({ at: s.at, src: s.src })) };
+    window.frame = (t) => { scene.draw(ctx, t); return c.toDataURL(fmt, 0.92); };
+  } else {
+    const puppet = await loadChar(job.char);
+    const track = job.track ? await (await fetch(job.track)).json() : null;
+    const perf = new Performance(puppet, { track, pose: job.pose, expression: job.expr || 'neutral', gaze: job.gaze || 'camera', cues: job.cues || [], flip: !!job.flip });
+    [c.width, c.height] = job.size;
+    const bg = job.bgImage ? await img(job.bgImage) : null;
+    const place = perf.fit(c.width, c.height, job.fit || 'body', job.margin ?? 0.06);
+    window.info = { duration: job.duration ?? (perf.duration + (job.tail ?? 0.4)), fps: job.fps || 30, says: job.audio ? [{ at: 0, src: job.audio }] : [], poses: puppet.info() };
+    window.frame = (t) => {
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height);
+      if (bg) ctx.drawImage(bg, 0, 0, c.width, c.height); else if (!job.transparent) { ctx.fillStyle = job.bg || '#ffffff'; ctx.fillRect(0, 0, c.width, c.height); }
+      perf.draw(ctx, t, place);
+      return c.toDataURL(fmt, 0.92);
+    };
+  }
+  window.ready = true;
+} catch (e) { window.failed = String(e && e.stack || e); }
+</script>

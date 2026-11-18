@@ -1,0 +1,16 @@
+{
+  "name": "dotchar",
+  "version": "1.0.0",
+  "description": "Lip-synced 2D characters as portable .char files: studio, runtime, lip-sync, renderer",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "setup": "node tools/setup-rhubarb.mjs",
+    "studio": "node studio/server.mjs",
+    "char": "node cli/char.mjs"
+  },
+  "dependencies": {
+    "playwright-core": "1.58.0"
+  },
+  "engines": { "node": ">=18" }
+}

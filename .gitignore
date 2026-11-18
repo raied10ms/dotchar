@@ -1,0 +1,9 @@
+node_modules/
+tools/rhubarb/
+.env
+render/.job-*.json
+work/
+*.mp4
+*.webm
+*.mov
+.DS_Store

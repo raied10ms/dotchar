@@ -1,0 +1,63 @@
+<!doctype html><meta charset="utf-8"><body>
+<script type="module">
+// Headless target for `char build` (cli/char.mjs): build.json + images -> .char, using the studio's own builder.
+import * as B from '../studio/builder.js';
+import { Performance } from '../runtime/player.js';
+const job = await (await fetch(new URLSearchParams(location.search).get('job'))).json();
+const blob = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(`missing image ${decodeURIComponent(u.split('/').pop())}`); return r.blob(); };
+const toB64 = async (b) => { const u8 = new Uint8Array(await b.arrayBuffer()); let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode(...u8.subarray(i, i + 0x8000)); return btoa(s); };
+window.run = async () => {
+  const cfg = job.cfg, url = (f) => job.base + f.split('/').map(encodeURIComponent).join('/');
+  const lib = { json: await (await fetch('../mouthlib/mouthlib.json')).json(), images: {} };
+  for (const L of Object.values(lib.json)) for (const [e, set] of Object.entries(L)) if (!e.startsWith('_')) for (const m of Object.values(set)) lib.images[m.image] = await B.urlToImage(`../mouthlib/${m.image}`);
+  const master = await B.fileToCanvas(await blob(url(cfg.master)));
+  const fit = [master.width, master.height];
+  const img = async (f) => (f ? B.fileToCanvas(await blob(url(f)), fit) : null);
+  const m = cfg.mouth || {};
+  const S = { lib, master, id: cfg.id, name: cfg.name, lips: cfg.lips || 'female', description: cfg.description, tags: cfg.tags, voice: cfg.voice, license: cfg.license, version: cfg.version,
+    mouthless: await img(cfg.mouthless), anchor: m.anchor || null, mouthW: m.width || 80, coverKx: m.cover?.[0] ?? 1.35, coverKy: m.cover?.[1] ?? 0.55,
+    eyeBox: cfg.eyes?.box || null, closed: await img(cfg.eyes?.closed), expr: {}, poses: [], cycles: {} };
+  S.lipColour = !m.lipColour || m.lipColour === 'auto' ? (S.anchor && B.sampleLipColour(master, S.anchor, S.mouthW)) : m.lipColour;
+  for (const e of B.EXPRS) if (cfg.eyes?.[e]) S.expr[e] = await img(cfg.eyes[e]);
+  const report = { poses: {}, warnings: [], lipColour: S.lipColour };
+  for (const [id, v] of Object.entries(cfg.poses || {})) {
+    const p = typeof v === 'string' ? { image: v } : v;
+    const c = await img(p.image);
+    if (c.resized) report.warnings.push(`${p.image}: different canvas size than the master, fitted bottom-centre`);
+    const pose = { id, canvas: c, talkable: p.talkable !== false, s: 1, dx: 0, dy: 0, match: null };
+    if (S.anchor && pose.talkable) {
+      if (p.head) Object.assign(pose, { s: p.head[2] ?? 1, dx: p.head[0], dy: p.head[1] });
+      else { const r = B.alignHead(master, c, B.headBox(S)); Object.assign(pose, { s: r.s, dx: r.dx, dy: r.dy }); }
+      pose.match = B.matchScore(master, c, B.headBox(S), pose.s, pose.dx, pose.dy);
+      if (p.talkable == null && pose.match < 0.86) { pose.talkable = false; report.warnings.push(`${id}: head match ${pose.match.toFixed(3)} < 0.86 -> silent pose (set "head": [dx, dy, scale] or "talkable": true to override)`); }
+    }
+    report.poses[id] = { talkable: pose.talkable, match: pose.match && +pose.match.toFixed(3), head: [pose.dx, pose.dy, +pose.s.toFixed(4)] };
+    S.poses.push(pose);
+  }
+  for (const [cid, v] of Object.entries(cfg.cycles || {})) {
+    const files = Array.isArray(v) ? v : [v];
+    let frames = await Promise.all(files.map(async (f) => B.fileToCanvas(await blob(url(f)))));
+    if (frames.length === 1) frames = B.splitSheet(frames[0], cfg.cycleFrames || 4);
+    S.cycles[cid] = frames;
+  }
+  const built = B.assemble(S);
+  const out = await toB64(await B.exportChar(built));
+  // QA sheet: every expression (rows) x every viseme (columns), face close-up on the master
+  let sheet = null;
+  if (job.sheet && built.pack.face) {
+    const pup = B.puppetFrom(built), perf = new Performance(pup, { life: false });
+    const exprs = Object.keys(built.pack.face.mouths), cell = 160;
+    const c = B.canvas(cell * 9, cell * exprs.length), ctx = c.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+    const place = perf.fit(cell, cell, 'face', 0.02);
+    exprs.forEach((e, r) => B.VISEMES.forEach((v, k) => {
+      ctx.setTransform(1, 0, 0, 1, k * cell, r * cell); ctx.save(); ctx.beginPath(); ctx.rect(0, 0, cell, cell); ctx.clip();
+      pup.draw(ctx, { pose: 'master', expr: e, mouth: v, open: 0.5 }, { ...place, x: place.x + k * cell, y: place.y + r * cell });
+      ctx.restore(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#d9480f'; ctx.font = 'bold 14px sans-serif'; ctx.fillText(`${e} ${v}`, k * cell + 6, r * cell + 16);
+    }));
+    sheet = c.toDataURL('image/png').split(',')[1];
+  }
+  return { char: out, sheet, report, info: { poses: Object.keys(built.pack.poses).length, face: built.pack.face ? (built.pack.face.states ? 'states' : 'mouth-only') : 'none' } };
+};
+window.ready = true;
+</script>

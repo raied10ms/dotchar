@@ -1,0 +1,211 @@
+{
+ "updated": "2026-11-18",
+ "characters": [
+  {
+   "file": "bhasha.char",
+   "id": "bhasha",
+   "name": "Bhasha",
+   "version": "1.0.0",
+   "description": "Bhasha, 8, the Echo girl of Shimul Bari (first floor, family restaurant). Green sari over a red-and-gold skirt, brown bob, red bindi.",
+   "tags": [
+    "main-cast",
+    "kids"
+   ],
+   "lips": "female",
+   "voice": {
+    "provider": "elevenlabs",
+    "id": "nDJIICjR9zfJExIFeSCN",
+    "model": "eleven_v3"
+   },
+   "talkable": [
+    "master",
+    "explain",
+    "greet",
+    "hands-hips",
+    "happy",
+    "idle",
+    "jump",
+    "laugh",
+    "lean",
+    "listen",
+    "point",
+    "sad",
+    "serve-tray",
+    "shrug",
+    "sit-edge",
+    "sit-juice",
+    "sit",
+    "sorry",
+    "surprised",
+    "talk-big",
+    "thumbs-up",
+    "tray",
+    "walkie",
+    "wave",
+    "point-left",
+    "count",
+    "think",
+    "think-chin",
+    "finger-up",
+    "hold-head",
+    "self-hug",
+    "lean-forward",
+    "fists-up",
+    "please",
+    "clap",
+    "arms-crossed",
+    "listen-ear",
+    "sit-chair",
+    "sit-floor",
+    "kneel",
+    "crouch",
+    "hold-book",
+    "read",
+    "write",
+    "phone",
+    "eat",
+    "sip",
+    "hold-up",
+    "carry",
+    "hold-out",
+    "scared",
+    "angry",
+    "hero",
+    "celebrate",
+    "dance"
+   ],
+   "silent": [
+    "laugh-roll",
+    "sit-sip",
+    "despair",
+    "cry",
+    "yawn"
+   ],
+   "expressions": [
+    "neutral",
+    "angry",
+    "excited",
+    "happy",
+    "sad",
+    "surprised",
+    "worried"
+   ],
+   "cycles": [
+    "run",
+    "walk"
+   ],
+   "bytes": 16457972,
+   "ok": true
+  },
+  {
+   "file": "fardin.char",
+   "id": "fardin",
+   "name": "Fardin",
+   "version": "1.0.0",
+   "description": "Fardin, 10 Minute School teacher (caricature). Maroon punjabi, white pajama, round glasses, full beard.",
+   "tags": [
+    "teacher",
+    "likeness"
+   ],
+   "lips": "male",
+   "voice": null,
+   "talkable": [
+    "master",
+    "arms-crossed",
+    "clap",
+    "dance-2",
+    "explain",
+    "hands-hips",
+    "happy",
+    "hold-box",
+    "hold-phone",
+    "idle",
+    "point",
+    "sad",
+    "shrug",
+    "sing-mic",
+    "sit",
+    "surprised",
+    "thumbs-up",
+    "wave",
+    "write-board",
+    "write-notebook"
+   ],
+   "silent": [
+    "dance-1",
+    "jump",
+    "pick-up"
+   ],
+   "expressions": [
+    "neutral",
+    "angry",
+    "excited",
+    "happy",
+    "sad",
+    "surprised",
+    "worried"
+   ],
+   "cycles": [
+    "run",
+    "walk"
+   ],
+   "bytes": 9793982,
+   "ok": true
+  },
+  {
+   "file": "rifat.char",
+   "id": "rifat",
+   "name": "Rifat",
+   "version": "1.0.0",
+   "description": "Rifat, 10 Minute School teacher (caricature). Untucked light-blue shirt, navy trousers, full beard.",
+   "tags": [
+    "teacher",
+    "likeness"
+   ],
+   "lips": "male",
+   "voice": null,
+   "talkable": [
+    "master",
+    "arms-crossed",
+    "clap",
+    "dance-1",
+    "dance-2",
+    "explain",
+    "hands-hips",
+    "happy",
+    "hold-box",
+    "hold-phone",
+    "idle",
+    "jump",
+    "point",
+    "sad",
+    "shrug",
+    "sing-mic",
+    "sit",
+    "surprised",
+    "thumbs-up",
+    "wave",
+    "write-board",
+    "write-notebook"
+   ],
+   "silent": [
+    "pick-up"
+   ],
+   "expressions": [
+    "neutral",
+    "angry",
+    "excited",
+    "happy",
+    "sad",
+    "surprised",
+    "worried"
+   ],
+   "cycles": [
+    "run",
+    "walk"
+   ],
+   "bytes": 9400076,
+   "ok": true
+  }
+ ]
+}

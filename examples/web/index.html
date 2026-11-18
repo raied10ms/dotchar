@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>.char on a web page</title>
+<!-- Serve the repo root (npm run studio) and open http://localhost:8790/examples/web/ . Click a character to play. -->
+<script type="module" src="../../runtime/char-player.js"></script>
+<style>
+  body { font: 15px system-ui, sans-serif; background: #f6f4ef; margin: 40px; }
+  .row { display: flex; gap: 24px; } figure { margin: 0; text-align: center; }
+  char-player { width: 300px; height: 400px; background: #fff; border-radius: 12px; }
+</style>
+<h2>Click a character to hear them</h2>
+<div class="row">
+  <figure>
+    <char-player src="../../characters/bhasha.char" audio="../audio/bhasha-hello.mp3" track="../audio/bhasha-hello.lipsync.json"
+                 pose="greet" expression="happy" fit="bust" width="600" height="800"></char-player>
+    <figcaption>Bhasha · pose greet · happy</figcaption>
+  </figure>
+  <figure>
+    <char-player src="../../characters/fardin.char" audio="../audio/fardin-hello.mp3" track="../audio/fardin-hello.lipsync.json"
+                 pose="explain" expression="surprised" fit="bust" width="600" height="800"></char-player>
+    <figcaption>Fardin · explain · surprised</figcaption>
+  </figure>
+  <figure>
+    <char-player src="../../characters/rifat.char" audio="../audio/rifat-hello.mp3" track="../audio/rifat-hello.lipsync.json"
+                 pose="thumbs-up" expression="excited" fit="face" width="600" height="800"
+                 cues='[{"at":1.5,"pose":"explain"}]'></char-player>
+    <figcaption>Rifat · face close-up · pose change at 1.5 s</figcaption>
+  </figure>
+</div>
