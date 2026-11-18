@@ -2,7 +2,7 @@
 
 One file per character. Any `.char` can talk, change expression and pose, and walk in a **web page, an HTML slide, a rendered video (MP4 or transparent overlay) or a multi-character scene**. You don't rig anything again and you don't generate new images per video.
 
-Comes with **Bhasha, Fardin, Rifat, Prapti, Aditya and Durjoy**, ready to use.
+Comes with nine characters ready to use: the kids **Bhasha, Aru, Nova and Ashim**, and the teachers **Fardin, Rifat, Prapti, Aditya and Durjoy**.
 
 ![Studio library](docs/studio-library.jpg)
 

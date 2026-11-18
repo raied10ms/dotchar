@@ -76,5 +76,44 @@
   "label": "Durjoy (বাংলা): \"হ্যালো বন্ধুরা! আমি দুর্জয়। আজকের ক্লাসে তোমাদের সবাইকে স্বাগতম।\"",
   "audio": "durjoy-bn.mp3",
   "track": "durjoy-bn.lipsync.json"
+ },
+ {
+  "char": "aru",
+  "label": "Aru: \"Hi, I'm Aru! Want to hear what the sparrows told me this morning?\"",
+  "audio": "aru-hello.mp3",
+  "track": "aru-hello.lipsync.json"
+ },
+ {
+  "char": "aru",
+  "lang": "bn",
+  "label": "Aru (বাংলা): \"হ্যালো বন্ধুরা! আমি আরু। চলো, আজ একসাথে নতুন কিছু শিখি!\"",
+  "audio": "aru-bn.mp3",
+  "track": "aru-bn.lipsync.json"
+ },
+ {
+  "char": "nova",
+  "label": "Nova: \"Hi, I'm Nova! Come and see what I just built in my workshop!\"",
+  "audio": "nova-hello.mp3",
+  "track": "nova-hello.lipsync.json"
+ },
+ {
+  "char": "nova",
+  "lang": "bn",
+  "label": "Nova (বাংলা): \"হ্যালো বন্ধুরা! আমি নোভা। চলো, আজ একসাথে নতুন কিছু বানাই!\"",
+  "audio": "nova-bn.mp3",
+  "track": "nova-bn.lipsync.json"
+ },
+ {
+  "char": "ashim",
+  "label": "Ashim: \"Hi, I'm Ashim! Every problem has a pattern. Let's find it together!\"",
+  "audio": "ashim-hello.mp3",
+  "track": "ashim-hello.lipsync.json"
+ },
+ {
+  "char": "ashim",
+  "lang": "bn",
+  "label": "Ashim (বাংলা): \"হ্যালো বন্ধুরা! আমি অসীম। চলো, আজ একসাথে একটা ধাঁধার সমাধান করি!\"",
+  "audio": "ashim-bn.mp3",
+  "track": "ashim-bn.lipsync.json"
  }
 ]

@@ -20,7 +20,7 @@ a = ap.parse_args()
 
 pack = json.load(open(os.path.join(a.rig, 'pack.json')))
 os.makedirs(a.out, exist_ok=True)
-DROP = {'stateMask', 'stateB6Rejects', 'builtFrom', 'warnings'}
+DROP = {'stateMask', 'stateB6Rejects', 'stateHoleRejects', 'builtFrom', 'warnings'}
 done = {}
 
 
