@@ -13,7 +13,10 @@
  *   { at, react: 'nod'|'tilt'|'bounce'|'jolt'|'bob', dur?, amp?, dir?, count? }   head/body beat (additive, eased in and out)
  *        nod = head dips forward (count 1|2) · tilt = head tilts and holds (questions) · bounce = two happy hops (laughs)
  *        jolt = small startle up (gasps) · bob = tiny dip on a stressed syllable (speakers). Written by episode.mjs auto-react.
- * cast options: { still: true } = no idle life at all (no breathing, sway, drift, squash, reactions, gaze shifts):
+ *        beat = one dance-beat dip (2 % of body height, 140 ms; amp 1.8 on bar starts). Generate one per beat for a music video.
+ *   { at, show: true|false }              cast option hidden:true starts off stage; show cues bring the actor on / off (cut, no motion)
+ * cast options: { crisp: true } = pose changes are hard cuts (no in-between drawing)
+ *               { still: true } = no idle life at all (no breathing, sway, drift, squash, reactions, gaze shifts):
  *                                  fx / flipbook / stage actors. Only mouth + blinks move.
  *               { gaze: 'camera' } = this actor's auto default when alone / addressing the audience
  *
@@ -38,14 +41,15 @@ export const LIFE = { breathe: 0.006, breathePeriod: 3.6, sway: 0.4, drift: 0.5,
 const REACT = { // default dur (s), amplitude (fraction of body height for lift, degrees for rotation)
   nod: { dur: 0.6, lift: 0.009, rot: 1.6 }, tilt: { dur: 1.5, rot: 4 }, bounce: { dur: 0.9, lift: 0.02 },
   jolt: { dur: 0.45, lift: 0.012, rot: 0.8 }, bob: { dur: 0.34, lift: 0.005, rot: 0.7 },
+  beat: { dur: 0.14, lift: 0.02 },   // one dance-beat dip: body sinks ~2 % of its height and returns in ~140 ms (amp scales it; bar starts use ~1.8)
 };
 // A character may opt out of side glances per expression: char.json face.gazeCameraOnly = ['sad', ...] or ['*'].
 const gazeSkip = (puppet, expr, g) => { const o = puppet.pack.face?.gazeCameraOnly; return g !== 'camera' && o && (o.includes(expr) || o.includes('*')) ? 'camera' : g; };
 const OPEN = { X: 0, A: 0, B: 0.25, C: 0.6, D: 1, E: 0.6, F: 0.3, G: 0.2, H: 0.45 };
 
 export class Actor {
-  constructor(name, puppet, { x = 0, y = 0, scale = 0.5, face = 'R', idle = 'idle', expression = 'neutral', still = false, gaze = null, actions = [] } = {}) {
-    Object.assign(this, { name, puppet, x0: x, y, scale, face0: face, idle: puppet.has(idle) ? idle : 'master', expr0: expression, still, gaze0: gaze });
+  constructor(name, puppet, { x = 0, y = 0, scale = 0.5, face = 'R', idle = 'idle', expression = 'neutral', still = false, crisp = false, hidden = false, gaze = null, actions = [] } = {}) {
+    Object.assign(this, { name, puppet, x0: x, y, scale, face0: face, idle: puppet.has(idle) ? idle : 'master', expr0: expression, still, crisp, hidden0: hidden, gaze0: gaze });
     this.actions = [...actions].sort((a, b) => a.at - b.at);
     this.seed = hash(name);
     this.reacts = this.actions.filter((a) => a.react && REACT[a.react]);
@@ -66,6 +70,13 @@ export class Actor {
       const t0 = Math.max(a.at, tt), dur = Math.abs(m.to - cx) / sp;
       this.moves.push({ t0, t1: t0 + dur, x0: cx, x1: m.to, kind }); cx = m.to; tt = t0 + dur;
     }
+  }
+
+  /** cast option hidden:true + { at, who, show: true|false } cues: off stage / on stage (not drawn while hidden) */
+  visibleAt(t) {
+    let v = !this.hidden0;
+    for (const a of this.actions) { if (a.at > t) break; if ('show' in a) v = !!a.show; }
+    return v;
   }
 
   xAt(t) {
@@ -188,6 +199,8 @@ export class Actor {
       } else if (a.react === 'jolt') {
         const b = bump(k) * (1 - 0.5 * k);
         lift -= R.lift * amp * H * b; headRot -= R.rot * amp * b * fwd;
+      } else if (a.react === 'beat') {
+        lift += R.lift * amp * H * bump(k);
       } else if (a.react === 'bob') {
         const b = bump(k);
         lift += R.lift * amp * H * b; headRot += R.rot * amp * b * fwd;
@@ -218,7 +231,7 @@ export class Actor {
     if (!this.puppet.has(st.pose)) st.pose = this.idle;
     // in-between drawing for ~3 frames on every pose change (idle <-> pose: its tween; pose A -> B: A's then B's)
     const TW = 0.1, since0 = t - poseStart;
-    if (poseStart > 0 && since0 >= 0 && since0 < TW) {
+    if (!this.crisp && poseStart > 0 && since0 >= 0 && since0 < TW) {
       const prev = this.#poseOnly(poseStart - 0.001), P = this.puppet.pack.poses;
       const into = st.pose !== this.idle && P[st.pose]?.tween, outOf = prev !== this.idle && P[prev]?.tween;
       if (into && outOf) st.tweenOf = since0 < TW / 2 ? prev : st.pose;

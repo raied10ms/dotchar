@@ -1,7 +1,8 @@
 /**
  * Scene = cast + props + voice lines + one flat timeline. Episodes are DATA (writers author JSON, not code).
  *   { size:[w,h], fps, background, cast:{name:{char (.char file or char.json folder),x,y,height|scale,face}}, lines:{id:{audio,track}},
- *     timeline:[{at|on+offset, who, pose|point|expression|say|walk|run|face}, {at, camera:{...}}] }
+ *     timeline:[{at|on+offset, who, pose|point|expression|say|walk|run|face}, {at, camera:{...}}, {at, background:'#hex'}, {at, fade:{to,dur}}],
+ *     music:{audio, at?}  (mixed once; lines may omit `audio` to just mouth), floor:{y, color}, gaze:false }
  * A `say` without `at` is placed right after the previous say ends (+gap): dialogue packs itself.
  */
 import { loadChar } from './char.js';
@@ -15,10 +16,15 @@ export async function loadScene(src, baseHref = location.href) {
   const tracks = {}, audio = {};
   await Promise.all(Object.entries(S.lines || {}).map(async ([id, l]) => {
     tracks[id] = await (await fetch(abs(l.track))).json();
-    audio[id] = abs(l.audio);
+    if (l.audio) audio[id] = abs(l.audio);   // a line with a track but no audio only moves mouths (the sound comes from `music` or another line)
   }));
   const fxImages = {};
   await Promise.all(Object.entries(S.images || {}).map(async ([id, p]) => (fxImages[id] = await img(abs(p)))));
+  // background cues { at, background: '#hex' | 'bg/name.png' }: images preloaded once (a missing file just falls back to the previous colour)
+  const bgImages = {};
+  await Promise.all((S.timeline || []).filter((a) => a.background && !a.background.startsWith('#')).map(async (a) => {
+    if (!(a.background in bgImages)) bgImages[a.background] = await img(abs(a.background)).catch(() => null);
+  }));
   const props = {};
   await Promise.all(Object.entries(S.props || {}).map(async ([id, p]) => (props[id] = { image: await img(abs(p.image)), handle: p.handle, scale: p.scale ?? 1, rot: p.rot ?? 0 })));
   // auto-place unscheduled says, then resolve actions anchored to a line: { on: 'n2', offset: 0.4 }
@@ -52,7 +58,8 @@ export async function loadScene(src, baseHref = location.href) {
   function speakerAt(t) { let last = null; for (const s_ of saysSorted) { if (s_.start > t) break; last = s_; } return last; }
   const duration = S.duration ?? Math.max(cursor, ...timeline.map((a) => a.at + (a.walk ? 0 : 0))) + 1.5;
   const bg = S.background && !S.background.startsWith('#') ? await img(abs(S.background)) : null;
-  const says = timeline.filter((a) => a.say).map((a) => ({ at: a.at, src: audio[a.say], id: a.say }));
+  const says = timeline.filter((a) => a.say && audio[a.say]).map((a) => ({ at: a.at, src: audio[a.say], id: a.say }));
+  if (S.music && S.music.audio) says.unshift({ at: S.music.at ?? 0, src: abs(S.music.audio), id: 'music' });  // music bed: mixed once
   return {
     ...S, duration, actors, tracks, props, says, timeline,
     camera(t) { return cameraAt(timeline, actors, S.size, t); },
@@ -65,13 +72,17 @@ export async function loadScene(src, baseHref = location.href) {
       const _set = ctx.setTransform.bind(ctx);
       ctx.setTransform = (...m) => _set(base.multiply(m.length === 6 ? new DOMMatrix(m) : m[0] ?? new DOMMatrix()));
       try { this._draw(ctx, t, bones); } finally { ctx.setTransform = _set; _set(1, 0, 0, 1, 0, 0); }
+      drawScreenFx(ctx, timeline, fxImages, t, S.size);   // captions + flying props: screen space, ignore the camera
+      const f = fadeAt(timeline, t);   // { at, fade: { to: '#000', dur } }: whole picture fades to a colour, screen space
+      if (f) { ctx.globalAlpha = f.alpha; ctx.fillStyle = f.to; ctx.fillRect(0, 0, w, h); ctx.globalAlpha = 1; }
     },
     _draw(ctx, t, bones) {
       const [w, h] = S.size;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
-      if (bg) ctx.drawImage(bg, 0, 0, w, h); else { ctx.fillStyle = S.background || '#f4efe6'; ctx.fillRect(0, 0, w, h); }
+      if (bg) ctx.drawImage(bg, 0, 0, w, h); else { const b = backgroundAt(S, timeline, t); const im = bgImages[b]; if (im) { const k = Math.max(w / im.width, h / im.height); ctx.drawImage(im, (w - im.width * k) / 2, (h - im.height * k) / 2, im.width * k, im.height * k); } else { ctx.fillStyle = im === null ? '#f4efe6' : b; ctx.fillRect(0, 0, w, h); } }
+      if (S.floor && !bgImages[backgroundAt(S, timeline, t)]) { ctx.fillStyle = S.floor.color || 'rgba(0,0,0,0.18)'; ctx.fillRect(0, S.floor.y, w, h - S.floor.y); }
       const c = { tracks, actors, props, speakerAt, gazeOff: S.gaze === false || globalThis.GAZE_OFF === true };
-      const list = Object.values(actors).map((a) => ({ a, ...a.poseAt(t, c) })).sort((p, q) => p.place.y - q.place.y);
+      const list = Object.values(actors).filter((a) => a.visibleAt(t)).map((a) => ({ a, ...a.poseAt(t, c) })).sort((p, q) => p.place.y - q.place.y);
       drawFx(ctx, timeline, actors, fxImages, t, S.size, true); // overlay.under: set dressing drawn behind the cast
       for (const { a, state, place } of list) {
         shadow(ctx, place, a);
@@ -80,6 +91,60 @@ export async function loadScene(src, baseHref = location.href) {
       drawFx(ctx, timeline, actors, fxImages, t, S.size);
     },
   };
+}
+
+/** { at, background: '#hex' } cues: the latest one at or before t wins (else the scene background) */
+function backgroundAt(S, timeline, t) {
+  let c = S.background || '#f4efe6';
+  for (const a of timeline) { if (a.at > t) break; if (a.background) c = a.background; }
+  return c;
+}
+
+/**
+ * Screen-space FX (not moved by the camera):
+ *   { at, dur, caption: { text, size=52, pos:'top'|'top-left'|'bottom', tilt=deg, color } }  comic caption: white rounded box, 120 ms scale-pop, one at a time
+ *   { at, dur, prop: { image, from:[x,y], to:[x,y], arc, spin, w } }               image flies from -> to along an arc (px) spinning `spin` degrees
+ */
+function drawScreenFx(ctx, timeline, images, t, [W, H]) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  for (const a of timeline) {
+    if (!a.prop || t < a.at || t > a.at + (a.dur ?? 1)) continue;
+    const p = a.prop, im = images[p.image]; if (!im) continue;
+    const k = (t - a.at) / (a.dur ?? 1), w = p.w || 300, h = w * im.height / im.width;
+    ctx.save();
+    ctx.translate(p.from[0] + (p.to[0] - p.from[0]) * k, p.from[1] + (p.to[1] - p.from[1]) * k - (p.arc || 0) * 4 * k * (1 - k));
+    ctx.rotate((p.spin || 0) * k * Math.PI / 180);
+    ctx.drawImage(im, -w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+  let cap = null;
+  for (const a of timeline) if (a.caption && t >= a.at && t < a.at + (a.dur ?? 1.4)) cap = a;
+  if (!cap) return;
+  const c = cap.caption, fs = c.size || 52, lt = t - cap.at;
+  const pop = Math.min(1, lt / 0.12), sc = 0.5 + 0.5 * pop + 0.12 * Math.sin(Math.PI * pop);   // quick scale-pop with a little overshoot
+  ctx.save();
+  ctx.font = `900 ${fs}px "Baloo 2", Impact, "Arial Black", "Comic Sans MS", sans-serif`;
+  let tw = ctx.measureText(c.text).width, pad = fs * 0.45, bw = tw + pad * 2;
+  if (bw > W * 0.94) { fs *= (W * 0.94) / bw; ctx.font = ctx.font.replace(/\d+(\.\d+)?px/, `${fs}px`); tw = ctx.measureText(c.text).width; pad = fs * 0.45; bw = tw + pad * 2; }   // long text shrinks to fit the frame
+  const bh = fs * 1.45;
+  const cy = c.pos === 'bottom' ? H - bh / 2 - 22 : bh / 2 + 16;
+  const cx = c.pos === 'top-left' ? Math.max(W / 6, bw / 2 + 24) : W / 2;   // top-left third: keeps clear of things at top-centre
+  ctx.translate(cx, cy); ctx.rotate((c.tilt ?? -2.5) * Math.PI / 180); ctx.scale(sc, sc);
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#1b1b1b'; ctx.lineWidth = Math.max(4, fs * 0.09);
+  ctx.beginPath(); ctx.roundRect(-bw / 2, -bh / 2, bw, bh, bh * 0.28); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = c.color || '#1b1b1b'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(c.text, 0, fs * 0.04);
+  ctx.restore();
+}
+
+/** { at, fade: { to: 'black', dur } } cues: linear fade of the whole picture to a colour */
+function fadeAt(timeline, t) {
+  let r = null;
+  for (const a of timeline) {
+    if (a.at > t) break;
+    if (a.fade) r = { to: a.fade.to === 'black' ? '#000' : a.fade.to || '#000', alpha: Math.min(1, (t - a.at) / (a.fade.dur || 1)) };
+  }
+  return r && r.alpha > 0 ? r : null;
 }
 
 /**
