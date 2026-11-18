@@ -6,6 +6,10 @@ Comes with **Bhasha, Fardin, Rifat, Prapti, Aditya and Durjoy**, ready to use.
 
 ![Studio library](docs/studio-library.jpg)
 
+**Live studio (browse, preview, copy the artifact code):** https://dotchar.10mstech.workers.dev
+
+The live site is a static copy. Lip-syncing your own audio and *New character from photos* need the local studio below, because they run ffmpeg, Rhubarb, Python and Chrome. Redeploy after adding characters with `tools/deploy.sh` (needs `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`).
+
 ## Setup (once)
 
 Needs Node 18+, ffmpeg and Google Chrome.

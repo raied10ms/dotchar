@@ -1,0 +1,8 @@
+{
+  // Static deploy of the studio (library, previews, single-file export, manual builder) + runtime + characters.
+  // Lip-syncing new audio and "New character from photos" need the local studio (npm run studio): they run
+  // ffmpeg, Rhubarb, Python and Chrome, which a static site cannot.
+  "name": "dotchar",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "./dist", "not_found_handling": "404-page" }
+}
