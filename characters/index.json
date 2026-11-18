@@ -5,7 +5,7 @@
    "file": "aditya.char",
    "id": "aditya",
    "name": "Aditya",
-   "version": "1.1.0",
+   "version": "1.2.0",
    "description": "Aditya, 10 Minute School teacher (caricature). Big loose curly black hair, dark rectangular glasses, short patchy beard, black crew-neck t-shirt, blue jeans.",
    "tags": [
     "teacher",
@@ -53,7 +53,7 @@
     "run",
     "walk"
    ],
-   "bytes": 9096930,
+   "bytes": 7230423,
    "ok": true
   },
   {
