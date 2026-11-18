@@ -32,6 +32,9 @@ class Preview {
     el.append(this.title, this.cv,
       h('div', { class: 'ctl' }, lab('Pose', this.pose), lab('Expression', this.expr), lab('Eyes look', this.gaze), lab('Framing', this.fit)),
       h('div', { class: 'bar' }, h('label', { class: 'hint' }, this.flip, ' mirror'), h('button', { class: 'b', onclick: () => this.visemes() }, 'Mouth test'), h('button', { class: 'b', onclick: () => this.stop() }, 'Stop')),
+      h('div', { class: 'bar' }, h('button', { class: 'b p', onclick: () => this.showcase('all') }, '▶ Play all movements'),
+        h('button', { class: 'b', onclick: () => this.showcase('poses') }, 'Poses'), h('button', { class: 'b', onclick: () => this.showcase('exprs') }, 'Expressions'),
+        h('button', { class: 'b', onclick: () => this.showcase('cycles') }, 'Walk / run')),
       h('div', { class: 'ctl' }, lab('Voice line', this.line), lab('STT for new audio', this.stt)),
       h('div', { class: 'bar' }, h('button', { class: 'b p', onclick: () => this.talk() }, '▶ Talk'), h('label', { class: 'b' }, 'Lip-sync my audio…', this.audioIn)),
       this.status);
@@ -48,7 +51,7 @@ class Preview {
   }
   set(puppet, { keep = false } = {}) {
     const prev = keep && this.puppet ? { pose: this.pose.value, expr: this.expr.value } : null;
-    this.puppet = puppet;
+    this.puppet = puppet; if (!keep) this.show = null;
     const info = puppet.info();
     this.title.textContent = `${puppet.pack.name}`;
     const opt = (v, t) => h('option', { value: v }, t || v);
@@ -66,13 +69,25 @@ class Preview {
     this.perfObj = new Performance(this.puppet, { track: this.track, pose: this.pose.value, expression: this.expr.value, gaze: this.gaze.value, flip: this.flip.checked });
   }
   play(track, audioUrl) {
-    this.stop();
+    const keep = this.show; this.stop(); this.show = keep;
     this.track = track; this.#perf();
     this.audio = audioUrl ? new Audio(audioUrl) : null;
     this.t0 = performance.now() / 1000; this.playing = true;
     this.audio?.play();
   }
-  stop() { this.playing = false; this.audio?.pause(); this.audio = null; this.track = null; this.#perf(); }
+  /** showcase: step through every pose (with its in-between), expression and walk/run cycle, labelled, looping until Stop */
+  showcase(what = 'all') {
+    if (!this.puppet) return;
+    const i = this.puppet.info(), items = [];
+    if (what === 'all' || what === 'poses') for (const p of [...i.talkable, ...i.silent]) items.push({ kind: 'pose', id: p, dur: 1.3, silent: i.silent.includes(p) });
+    if (what === 'all' || what === 'exprs') for (const e of i.expressions) items.push({ kind: 'expression', id: e, dur: 1.3 });
+    if (what === 'all' || what === 'cycles') for (const c of i.cycles) items.push({ kind: 'cycle', id: c, dur: 2.4 });
+    if (!items.length) return this.say('Nothing to show for that.');
+    let t = 0; for (const it of items) { it.at = t; t += it.dur; }
+    this.show = { items, total: t, t0: performance.now() / 1000 };
+    this.say(`Showing ${items.length} movements on a loop. Stop ends it; Talk or Mouth test plays over it.`);
+  }
+  stop() { this.show = null; this.playing = false; this.audio?.pause(); this.audio = null; this.track = null; this.#perf(); }
   visemes() {
     const seq = 'XABCDEFGHX', fps = 30, frames = [...seq].map((v) => v.repeat(14)).join('');
     this.play({ fps, duration: frames.length / fps, frames, open: [...frames].map((v) => OPEN[v]) });
@@ -112,8 +127,23 @@ class Preview {
       if (!this.playing) { st.mouth = 'X'; st.open = 0; }
       const pose = this.pose.value;
       if (pose.startsWith('cycle:')) { const id = pose.slice(6); st.cycle = { id, frame: Math.floor(now * (id === 'run' ? 15 : 12)) }; }
-      const place = this.perfObj.fit(600, 800, this.fit.value);
+      let label = null, fit = this.fit.value;
+      if (this.show) {
+        const S = this.show, lt = (now - S.t0) % S.total, k = S.items.findIndex((it) => lt >= it.at && lt < it.at + it.dur), it = S.items[k];
+        delete st.cycle; delete st.tweenOf;
+        if (it.kind === 'pose') { st.pose = it.id; if (lt - it.at < 0.1 && this.puppet.pack.poses[it.id]?.tween) st.tweenOf = it.id; }
+        else if (it.kind === 'expression') { st.pose = this.puppet.has('idle') ? 'idle' : 'master'; st.expr = it.id; fit = fit === 'body' ? 'bust' : fit; }
+        else { st.cycle = { id: it.id, frame: Math.floor((lt - it.at) * (it.id === 'run' ? 15 : 12)) }; fit = 'body'; }
+        label = `${it.kind}: ${it.id}${it.silent ? ' (silent)' : ''}   ${k + 1}/${S.items.length}`;
+      }
+      const place = this.perfObj.fit(600, 800, fit);
       try { this.puppet.draw(ctx, st, place); } catch (e) { this.say(String(e.message || e)); }
+      if (label) {
+        ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.font = '600 22px ui-sans-serif, system-ui, sans-serif';
+        const w = ctx.measureText(label).width + 28;
+        ctx.fillStyle = 'rgba(29,27,24,.82)'; ctx.beginPath(); ctx.roundRect(14, 14, w, 40, 10); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.fillText(label, 28, 35);
+      }
     };
     tick();
   }

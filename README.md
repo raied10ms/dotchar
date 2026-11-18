@@ -62,6 +62,8 @@ const perf = new Performance(rifat, { track, pose: 'explain', expression: 'happy
 perf.draw(ctx, t, perf.fit(canvas.width, canvas.height, 'bust'));   // t = audio time, or frame / fps
 ```
 
+In the Studio's Library, **▶ Play all movements** loops through every pose, expression and walk/run cycle of the selected character, each one labelled.
+
 What can each character do? `npm run char -- validate characters/bhasha.char` lists its talkable poses, silent poses, expressions and walk/run cycles.
 
 ## Make a new character
