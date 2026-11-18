@@ -1,6 +1,7 @@
 import { loadChar } from '../runtime/char.js';
 import { Performance } from '../runtime/player.js';
 import * as B from './builder.js';
+import * as X from './exporter.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const h = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) k.startsWith('on') ? e.addEventListener(k.slice(2), v) : k === 'class' ? (e.className = v) : e.setAttribute(k, v); e.append(...kids.filter((k) => k != null)); return e; };
@@ -17,7 +18,8 @@ document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click
 
 // ------------------------------------------------------------------------------------------------ preview (shared)
 class Preview {
-  constructor(el) {
+  /** el = controls host; view = canvas host (defaults to el: one column) */
+  constructor(el, view = el) {
     this.el = el;
     this.cv = h('canvas', { width: 600, height: 800 });
     const sel = (opts) => h('select', {}, ...opts.map((o) => h('option', { value: o }, o)));
@@ -29,7 +31,8 @@ class Preview {
     this.status = h('div', { class: 'status' });
     this.title = h('h3', { style: 'margin:0 0 8px' }, 'Preview');
     const lab = (t, e) => h('div', {}, h('label', {}, t), e);
-    el.append(this.title, this.cv,
+    view.append(this.title, this.cv);
+    el.append(
       h('div', { class: 'ctl' }, lab('Pose', this.pose), lab('Expression', this.expr), lab('Eyes look', this.gaze), lab('Framing', this.fit)),
       h('div', { class: 'bar' }, h('label', { class: 'hint' }, this.flip, ' mirror'), h('button', { class: 'b', onclick: () => this.visemes() }, 'Mouth test'), h('button', { class: 'b', onclick: () => this.stop() }, 'Stop')),
       h('div', { class: 'bar' }, h('button', { class: 'b p', onclick: () => this.showcase('all') }, '▶ Play all movements'),
@@ -150,27 +153,27 @@ class Preview {
 }
 
 // ------------------------------------------------------------------------------------------------ library
-const pvLib = new Preview($('#pvLib'));
+const pvLib = new Preview($('#pvLibCtl'), $('#pvLibView'));
 let current = null; // { file, name, id }
 async function library() {
   let idx = { characters: [] };
   try { idx = await (await fetch('../characters/index.json')).json(); } catch {}
   const grid = $('#grid');
   grid.replaceChildren(...idx.characters.map((c) => h('div', { class: 'card char', onclick: (e) => pick(c, e.currentTarget) },
-    h('img', { src: `../characters/thumbs/${c.id}.webp`, alt: c.name }), h('b', {}, c.name),
-    h('span', {}, `${c.talkable.length} poses · ${c.expressions.length} moods · ${(c.bytes / 1e6).toFixed(0)} MB`))));
+    h('img', { src: `../characters/thumbs/${c.id}.webp`, alt: c.name }),
+    h('div', {}, h('b', {}, c.name), h('span', {}, `${c.talkable.length} poses · ${(c.bytes / 1e6).toFixed(0)} MB`)))));
   if (idx.characters[0]) pick(idx.characters[0], grid.firstChild);
 }
 async function pick(c, el) {
   document.querySelectorAll('.char').forEach((x) => x.classList.toggle('sel', x === el));
   pvLib.say(`Loading ${c.name}…`);
   const p = await loadChar(`../characters/${c.file}`);
-  current = { file: `characters/${c.file}`, name: c.name, id: c.id, talkable: c.talkable };
-  pvLib.set(p);
+  current = { file: `characters/${c.file}`, name: c.name, id: c.id, talkable: c.talkable, inRepo: true };
+  pvLib.set(p); exportPanel();
 }
 async function openFile(file) {
   pvLib.say(`Opening ${file.name}…`);
-  try { const p = await loadChar(file); current = { file: `characters/${file.name}`, name: p.pack.name, id: p.pack.id, talkable: p.info().talkable }; pvLib.set(p); document.querySelectorAll('.char').forEach((x) => x.classList.remove('sel')); }
+  try { const p = await loadChar(file); current = { file: `characters/${file.name}`, name: p.pack.name, id: p.pack.id, talkable: p.info().talkable, blob: file }; pvLib.set(p); exportPanel(); document.querySelectorAll('.char').forEach((x) => x.classList.remove('sel')); }
   catch (e) { pvLib.say(`Not a valid .char: ${e.message}`); }
 }
 $('#openChar').addEventListener('change', (e) => openFile(e.target.files[0]));
@@ -183,8 +186,58 @@ document.addEventListener('drop', (e) => {
 });
 library();
 
+// ------------------------------------------------------------------------------------------------ export (single file / .char)
+const CDN = 'https://cdn.jsdelivr.net/gh/raied10ms/dotchar@main';
+function exportPanel() {
+  const p = pvLib.puppet; if (!p) return;
+  const info = p.info(), all = [...info.talkable, ...info.silent];
+  const pref = ['explain', 'idle', 'wave', 'point', 'thumbs-up', 'happy'].filter((x) => info.talkable.includes(x)).slice(0, 4);
+  const on = new Set(pref.length ? pref : all.slice(0, 3));
+  $('#expName').textContent = p.pack.name;
+  $('#expPoses').replaceChildren(...all.map((id) => { const i = h('input', { type: 'checkbox', value: id }); i.checked = on.has(id); i.addEventListener('change', () => ($('#expSizeInfo').textContent = '')); return h('label', {}, i, id); }));
+  const a = $('#expChar');
+  if (current.blob) a.href = URL.createObjectURL(current.blob); else a.href = `../${current.file}`;
+  a.download = `${current.id}.char`;
+  $('#expSizeInfo').textContent = ''; $('#expInfo').textContent = '';
+}
+async function buildExport() {
+  const p = pvLib.puppet; if (!p) return null;
+  const poses = [...document.querySelectorAll('#expPoses input:checked')].map((i) => i.value);
+  if (!poses.length) { $('#expInfo').textContent = 'Pick at least one pose.'; return null; }
+  $('#expInfo').textContent = 'Packing…';
+  const data = X.slim(p, { poses, maxH: +$('#expSize').value });
+  let sample = null;
+  const s = (pvLib.samples || []).find((x) => x.char === p.pack.id);
+  if ($('#expLine').value === '1' && s) {
+    const track = await (await fetch(`../examples/audio/${s.track}`)).json();
+    const blob = await (await fetch(`../examples/audio/${s.audio}`)).blob();
+    const audio = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(blob); });
+    sample = { track: { fps: track.fps, duration: track.duration, frames: track.frames, open: track.open }, audio };
+  }
+  const html = await X.embedHtml(data, { pose: pvLib.pose.value.startsWith('cycle:') ? poses[0] : (poses.includes(pvLib.pose.value) ? pvLib.pose.value : poses[0]), expression: pvLib.expr.value, sample });
+  $('#expSizeInfo').textContent = `${Math.round(html.length / 1024)} KB · ${poses.length} pose${poses.length > 1 ? 's' : ''}`;
+  return html;
+}
+$('#expCopy').addEventListener('click', async () => {
+  const html = await buildExport(); if (!html) return;
+  try { await navigator.clipboard.writeText(html); $('#expInfo').textContent = 'Copied. Paste it into Claude and say: "make this an artifact" (or "use this character in my artifact").'; }
+  catch { $('#expInfo').textContent = 'Clipboard blocked by the browser: use Download .html and attach the file instead.'; }
+});
+$('#expHtml').addEventListener('click', async () => {
+  const html = await buildExport(); if (!html) return;
+  h('a', { href: URL.createObjectURL(new Blob([html], { type: 'text/html' })), download: `${current.id}-char.html` }).click();
+  $('#expInfo').textContent = `Saved ${current.id}-char.html. Open it in a browser, or attach it to a Claude chat.`;
+});
+$('#expTag').addEventListener('click', async () => {
+  const pose = pvLib.pose.value.startsWith('cycle:') ? 'master' : pvLib.pose.value;
+  const tag = `<script type="module" src="${CDN}/runtime/char-player.js"></script>\n<char-player src="${CDN}/${current.file}" audio="line.mp3" track="line.lipsync.json"\n             pose="${pose}" expression="${pvLib.expr.value}" fit="${pvLib.fit.value}" width="540" height="720"></char-player>`.replace(/\\n/g, '\n');
+  try { await navigator.clipboard.writeText(tag); $('#expInfo').textContent = current.inRepo ? 'Copied. Works on any normal web page (loads the character from the public repo). Not for Claude artifacts: use the single-file code there.' : 'Copied, but this character is not in the repo yet: add it to characters/ and push first.'; }
+  catch { $('#expInfo').textContent = tag; }
+});
+
 // ------------------------------------------------------------------------------------------------ create
 const pvCreate = new Preview($('#pvCreate'));
+$('#pvCreate').prepend(pvCreate.cv); $('#pvCreate').prepend(pvCreate.title);
 const S = { lips: 'female', mouthW: 90, coverKx: 1.35, coverKy: 0.55, expr: {}, poses: [], cycles: {}, lipAuto: true, files: { eyes: {}, cycles: {} } };
 const lib = { json: null, images: {} };
 async function loadLib() {

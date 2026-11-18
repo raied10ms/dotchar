@@ -63,7 +63,7 @@ export class Performance {
     let r;
     if (Array.isArray(fit)) r = fit;
     else if (fit === 'face' && box) { const cx = (box[0] + box[2]) / 2, cy = (box[1] + box[3]) / 2, s = (box[2] - box[0]) * 0.62; r = [cx - s, cy - s, cx + s, cy + s]; }
-    else if (fit === 'bust') { const top = box ? box[1] - (box[3] - box[1]) * 0.25 : ry - H; r = [rx - H * 0.3, top, rx + H * 0.3, top + H * 0.45]; }
+    else if (fit === 'bust') { r = box ? [(box[0] + box[2]) / 2 - (box[2] - box[0]) * 1.05, box[1] - (box[3] - box[1]) * 0.25, (box[0] + box[2]) / 2 + (box[2] - box[0]) * 1.05, box[3] + (box[3] - box[1]) * 0.95] : [rx - H * 0.3, ry - H, rx + H * 0.3, ry - H * 0.55]; } // head and shoulders, sized from the head
     else r = [rx - H * 0.4, ry - H, rx + H * 0.4, ry];
     const rw = r[2] - r[0], rh = r[3] - r[1];
     const scale = Math.min(w / rw, h / rh) * (1 - margin * 2);
